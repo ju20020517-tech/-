@@ -540,6 +540,81 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
 @media (prefers-reduced-motion:no-preference){.card{animation:in .25s ease-out both}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
 </style>
 
+<style>
+/* ---------- 휴대폰 화면 ---------- */
+@media (max-width:640px){
+  body{padding:0 12px}
+  .wrap{padding-block:18px 72px}
+  header{margin-bottom:12px;gap:8px}
+  h1{font-size:22px}
+  .sub{display:none}
+  .stats{width:100%;align-items:stretch;gap:6px}
+  .stat,.stat .grp{flex-wrap:wrap;gap:3px 10px;font-size:12px}
+  .ddwrap{position:static}
+  .dday{width:100%;justify-content:flex-start;padding:6px 12px;gap:2px 12px}
+  .dc b{font-size:17px}
+  .ddpanel{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 70px);width:auto;max-height:70vh;overflow:auto}
+  .members{margin:0 0 8px;gap:8px}
+  body:not(.home-view) .mtools{display:none}
+  #people{gap:8px;width:100%}
+  .nhead{gap:8px;flex-wrap:nowrap;width:100%}
+  .nhead .nt{font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nhead .btn{flex:none;padding:6px 10px;font-size:13px}
+  .nsw{flex-wrap:nowrap;overflow-x:auto;width:100%;padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .nsw::-webkit-scrollbar{display:none}
+  .nsw button{flex:none}
+  .bar{gap:8px;padding-block:8px;margin-bottom:12px}
+  .bar .tabs{width:100%}
+  .bar .tabs button{flex:1;padding:8px 4px;font-size:14px}
+  .search{flex:1 1 0;padding:7px 10px}
+  .tools{flex-wrap:nowrap;gap:4px}
+  .tool{font-size:0;gap:0;padding:8px 10px}
+  .tool svg{width:17px;height:17px}
+  .tool .n{font-size:12px;margin-left:4px}
+  .save{font-size:11px;margin-left:0}
+  .help{margin-bottom:12px}
+  .list{gap:14px}
+  /* 아이폰은 16px보다 작은 입력칸을 누르면 화면을 확대해 버려요 */
+  input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea,.rt{font-size:16px!important}
+  .qa .question{font-size:17px!important;padding:12px 14px}
+  .qa .qhead{padding:8px 12px}
+  .qa .related{padding:8px 12px;flex-wrap:wrap}
+  .rt{padding:12px 14px}
+  .qa .answer{min-height:96px}
+  .qa .ansfoot{padding:8px 12px 10px}
+  .fbw{padding:10px 12px 12px}
+  /* 피드백 표: 이름·종류 한 줄, 내용은 아래로 */
+  .fbtab.fl .fbr{grid-template-columns:auto 1fr;grid-template-areas:"n k" "t t"}
+  .fbtab.fl .fbn{grid-area:n;padding-bottom:0}
+  .fbtab.fl .cell.kd{grid-area:k;justify-content:flex-end;padding-bottom:0}
+  .fbtab.fl .cell.tx{grid-area:t;padding-top:4px}
+  .fbtab.fl .cell::before{content:none}
+  .fbtab.fl .fbr>*{border-top:0}
+  .fbtab.fl .fbr+.fbr{border-top:1px solid var(--rule)}
+  .fbtab.sb .fbr{grid-template-columns:1fr}
+  .fbt label{padding:6px 12px}
+  /* 첫 화면 */
+  .hometabs{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+  .hometabs::-webkit-scrollbar{display:none}
+  .hometabs button{flex:none;font-size:13px;padding:7px 12px}
+  .home h2{font-size:19px}
+  .mgrid{grid-template-columns:1fr 1fr;gap:10px}
+  .mcard{padding:12px;gap:6px;border-radius:14px}
+  .mcard .top{gap:8px}
+  .mcard .av{width:32px;height:32px;font-size:15px}
+  .mcard .nm{font-size:15px}
+  .mcard .nm small{display:none}
+  .mcard .st{font-size:11.5px;gap:1px 6px}
+  .mcard .dd{min-height:0}
+  .mcard.addm{min-height:110px}
+  .cmpq{font-size:18px}
+  .tadd input{min-width:0}
+  .sbbox{padding:12px}
+  .sbl li{padding:8px}
+  .sbl .fi{width:34px;height:34px}
+  .panel{padding:18px}
+}
+</style>
 <div class="wrap">
   <header>
     <div>
