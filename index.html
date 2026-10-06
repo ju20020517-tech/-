@@ -235,8 +235,8 @@ body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .vpanel{background:var(--paper);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(900px,100%);max-height:calc(100% - 32px);display:flex;flex-direction:column;overflow:hidden}
 .vh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--rule)}
 .vh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vbody{flex:1 1 auto;overflow:auto;background:#5b5458;min-height:200px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.vbody canvas{display:block;max-width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none}
+.vbody{flex:1 1 auto;overflow:auto;background:#5b5458;min-height:200px;padding:12px;display:flex;flex-direction:column;align-items:flex-start;gap:12px;overscroll-behavior:contain;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.vbody canvas{display:block;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none}
 .vbody .vmsg{color:#fff;font-size:14px;padding:30px 0}
 .vbody .docv{background:#fff;color:#1a1a1a;width:min(800px,100%);padding:32px 36px;line-height:1.75;font-size:15px;box-shadow:0 2px 10px rgba(0,0,0,.35);white-space:normal;overflow-wrap:anywhere}
 .vbody .docv.txt{white-space:pre-wrap}
@@ -244,6 +244,20 @@ body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .vbody .docv img{max-width:100%}
 .vpanel{height:calc(100% - 32px)}
 .vh .vn{font-size:12px;color:var(--faint);font-weight:500;white-space:nowrap}
+.vbody>*{margin:0 auto;flex:none}
+.vh{padding-top:max(10px,env(safe-area-inset-top))}
+.vt{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.vt b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vb{font:inherit;font-size:18px;line-height:1;width:36px;height:36px;flex:none;border:1px solid var(--rule);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;display:grid;place-items:center;padding:0}
+.vb:disabled{opacity:.35;cursor:default}
+.vf{display:flex;align-items:center;gap:6px;padding:8px 12px max(8px,env(safe-area-inset-bottom));border-top:1px solid var(--rule);background:var(--paper)}
+.vz{font:inherit;font-size:13px;font-weight:600;min-width:58px;height:36px;border:1px solid var(--rule);border-radius:10px;background:var(--paper);color:var(--ink);cursor:pointer;font-variant-numeric:tabular-nums}
+.vsp{flex:1}
+.vpg{display:flex;align-items:center;gap:6px;font-size:13px;font-variant-numeric:tabular-nums;color:var(--soft)}
+.vpg[hidden]{display:none}
+.sbl li{cursor:pointer}
+.sbl li:hover{border-color:var(--accent)}
+@media (max-width:640px){#viewer{padding:0}#viewer .vpanel{width:100%;height:100%;max-height:none;border-radius:0}.vbody{padding:8px;gap:8px}.vbody .docv{padding:20px 18px}}
 .vbody img{max-width:100%;height:auto;display:block}
 .sbgrid{display:flex;flex-direction:column;gap:12px;margin-top:6px}
 .mcard .sbt{font-size:11px;font-weight:700;color:var(--g2i);background:var(--g2);border-radius:999px;padding:1px 8px;width:max-content}
@@ -512,7 +526,11 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   <div class="list" id="list"></div>
 </div>
 
-<div class="scrim" id="viewer" hidden><div class="vpanel" role="dialog" aria-modal="true" aria-labelledby="vname"><div class="vh"><b id="vname"></b><span class="vn" id="vnote"></span><button class="btn" type="button" id="vclose">닫기</button></div><div class="vbody" id="vbody"></div></div></div>
+<div class="scrim" id="viewer" hidden><div class="vpanel" role="dialog" aria-modal="true" aria-labelledby="vname">
+  <div class="vh"><button class="vb" type="button" id="vprev" aria-label="이전 파일">‹</button><div class="vt"><b id="vname"></b><span class="vn" id="vnote"></span></div><button class="vb" type="button" id="vnext" aria-label="다음 파일">›</button><button class="btn" type="button" id="vclose">닫기</button></div>
+  <div class="vbody" id="vbody"></div>
+  <div class="vf"><button class="vb" type="button" id="vzo" aria-label="축소">－</button><button class="vz" type="button" id="vzr" title="화면에 맞추기">100%</button><button class="vb" type="button" id="vzi" aria-label="확대">＋</button><span class="vsp"></span><span class="vpg" id="vpgw"><button class="vb" type="button" id="vpp" aria-label="이전 쪽">▲</button><span id="vpage"></span><button class="vb" type="button" id="vpn" aria-label="다음 쪽">▼</button></span></div>
+</div></div>
 <div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastUndo" type="button">되돌리기</button></div>
 
 <div class="scrim" id="printSheet" hidden>
@@ -1312,7 +1330,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
           <option value="">${a.auto ? '자동 연결 (같은 질문)' : '고르지 않음'}</option>
           ${myAnswerCards(m.id).map(x => `<option value="${esc(x.id)}"${a.linked && a.card.id === x.id ? ' selected' : ''}>${x.kind === 'w' ? '[약점] ' : x.kind === 'r' ? '[생기부] ' : ''}${esc(x.question.trim().slice(0, 40))}${toText(x.content).trim() ? '' : ' (답변 없음)'}</option>`).join('')}
         </select></label>` : '';
-      const src = c && (a.linked || a.auto) && (c.question || '').trim() !== t.text.trim() ? `<div class="src">내 노트의 "${esc(c.question.trim().slice(0, 40))}" 답변</div>` : '';
+      const src = '';
       return `<div class="crow${isMe ? ' me' : ''}${txt ? '' : ' noans'}" role="row">
         <div class="cn" role="rowheader"><span class="av">${avHTML(m)}</span><b>${esc(m.name)}</b>${isMe ? '<span class="who">나</span>' : ''}</div>
         <div class="cb" role="cell">${opts}${src}
@@ -1434,7 +1452,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     const up = !mine ? '' : local ? '<p class="fbnote">파일 올리기는 친구들과 같이 쓰는 저장소에 연결됐을 때만 돼요.</p>'
       : `<label class="btn pri sbup">+ 생기부 올리기<input type="file" id="sbFile" accept="application/pdf,image/*,.docx,.txt" multiple aria-label="생기부 파일 고르기"></label>`;
     const d = ms => { const x = new Date(ms); return `${x.getMonth() + 1}월 ${x.getDate()}일`; };
-    const rows = fl.map(f => { const k = kindOf(f); return `<li data-file="${esc(f.id)}"><span class="fi ${k}">${KLABEL[k]}</span><span class="fn"><b>${esc(f.name)}</b><small>${kb(f.size || 0)} · ${d(f.created || 0)}</small></span><button class="btn" type="button" data-fview>보기</button>${mine ? '<button class="btn danger" type="button" data-fdel>삭제</button>' : ''}</li>`; }).join('');
+    const rows = fl.map(f => { const k = kindOf(f); return `<li data-file="${esc(f.id)}"><span class="fi ${k}">${KLABEL[k]}</span><span class="fn"><b>${esc(f.name)}</b><small>${kb(f.size || 0)} · ${d(f.created || 0)}</small></span><button class="btn" type="button" data-fview>열기</button>${mine ? '<button class="btn danger" type="button" data-fdel>삭제</button>' : ''}</li>`; }).join('');
     return `<section class="sbbox" aria-label="생기부 파일"><div class="sbh"><div><h3>${esc(nameOf(mid))}의 생기부</h3><p>${mine ? 'PDF, 사진, 워드(.docx), 글(.txt) 파일을 올려요. 조원들은 이 사이트 안에서만 볼 수 있어요.' : `파일 ${fl.length}개`}</p></div>${up}</div>
       ${sbProg ? `<p class="sbprog">${esc(sbProg)}</p>` : ''}
       ${fl.length ? `<ul class="sbl">${rows}</ul>` : `<p class="fbnote">아직 올린 생기부가 없어요.</p>`}
@@ -1470,7 +1488,39 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     fileData.set(f.id, data); return data;
   }
   let vFile = null;
-  function closeViewer() { vToken++; $('#viewer').hidden = true; $('#vbody').innerHTML = ''; vFile = null; }
+  function closeViewer() { vToken++; $('#viewer').hidden = true; $('#vbody').innerHTML = ''; vFile = null; document.body.style.overflow = ''; }
+  // 확대·축소, 쪽 이동, 앞뒤 파일
+  let vZoom = 1;
+  function applyZoom() {
+    const body = $('#vbody');
+    body.querySelectorAll('canvas[data-w]').forEach(cv => { cv.style.width = Math.round(+cv.dataset.w * vZoom) + 'px'; });
+    body.querySelectorAll('.docv').forEach(d => { d.style.fontSize = (15 * vZoom) + 'px'; d.style.width = `min(${Math.round(800 * vZoom)}px, ${vZoom > 1 ? Math.round(100 * vZoom) + '%' : '100%'})`; });
+    $('#vzr').textContent = Math.round(vZoom * 100) + '%';
+    $('#vzo').disabled = vZoom <= 0.5; $('#vzi').disabled = vZoom >= 3;
+    updatePage();
+  }
+  const setZoom = z => { const body = $('#vbody'), r = body.scrollTop / Math.max(1, body.scrollHeight); vZoom = Math.min(3, Math.max(0.5, Math.round(z * 100) / 100)); applyZoom(); body.scrollTop = r * body.scrollHeight; };
+  $('#vzi').addEventListener('click', () => setZoom(vZoom + 0.25));
+  $('#vzo').addEventListener('click', () => setZoom(vZoom - 0.25));
+  $('#vzr').addEventListener('click', () => setZoom(1));
+  const pages = () => [...$('#vbody').querySelectorAll('canvas.pg')];
+  function curPage() { const body = $('#vbody'), y = body.scrollTop + body.clientHeight / 3, ps = pages(); let i = 0; ps.forEach((p, j) => { if (p.offsetTop <= y) i = j; }); return i; }
+  function updatePage() { const ps = pages(), total = +($('#vbody').dataset.pages || 0); $('#vpgw').hidden = total < 2; if (total > 1) { const i = curPage(); $('#vpage').textContent = `${i + 1} / ${total}쪽`; $('#vpp').disabled = i <= 0; $('#vpn').disabled = i >= ps.length - 1; } }
+  const goPage = d => { const ps = pages(), i = Math.min(ps.length - 1, Math.max(0, curPage() + d)); if (ps[i]) $('#vbody').scrollTo({ top: ps[i].offsetTop - 8, behavior: 'smooth' }); };
+  $('#vpp').addEventListener('click', () => goPage(-1));
+  $('#vpn').addEventListener('click', () => goPage(1));
+  $('#vbody').addEventListener('scroll', () => requestAnimationFrame(updatePage), { passive: true });
+  const sibling = d => { if (!vFile) return null; const fl = fileCards(vFile.owner), i = fl.findIndex(x => x.id === vFile.id); return fl[i + d] || null; };
+  $('#vprev').addEventListener('click', () => { const f = sibling(-1); if (f) openViewer(f); });
+  $('#vnext').addEventListener('click', () => { const f = sibling(1); if (f) openViewer(f); });
+  document.addEventListener('keydown', e => {
+    if ($('#viewer').hidden) return;
+    if (e.key === 'ArrowLeft') { const f = sibling(-1); if (f) openViewer(f); }
+    else if (e.key === 'ArrowRight') { const f = sibling(1); if (f) openViewer(f); }
+    else if (e.key === '+' || e.key === '=') setZoom(vZoom + 0.25);
+    else if (e.key === '-') setZoom(vZoom - 0.25);
+    else if (e.key === '0') setZoom(1);
+  });
   $('#vclose').addEventListener('click', closeViewer);
   $('#viewer').addEventListener('click', e => { if (e.target.id === 'viewer') closeViewer(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#viewer').hidden) closeViewer(); });
@@ -1490,7 +1540,6 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       });
       return;
     }
-    if (!e.target.closest('[data-fview]')) return;
     openViewer(f);
   });
   const LIBS = { pdf: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js', pdfWorker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js', docx: 'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js' };
@@ -1501,27 +1550,33 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   async function openViewer(f) {
     const my = ++vToken, body = $('#vbody'), k = kindOf(f), live = () => my === vToken && !$('#viewer').hidden;
     vFile = f; $('#vname').textContent = f.name; $('#vnote').textContent = '보기 전용';
-    body.innerHTML = '<p class="vmsg">불러오는 중…</p>'; $('#viewer').hidden = false;
+    const fl = fileCards(f.owner), fi = fl.findIndex(x => x.id === f.id);
+    $('#vprev').disabled = fi <= 0; $('#vnext').disabled = fi < 0 || fi >= fl.length - 1;
+    $('#vprev').hidden = $('#vnext').hidden = fl.length < 2;
+    vZoom = 1; body.dataset.pages = 0; $('#vzr').textContent = '100%'; $('#vpgw').hidden = true;
+    body.innerHTML = '<p class="vmsg">불러오는 중…</p>'; $('#viewer').hidden = false; document.body.style.overflow = 'hidden'; body.scrollTop = 0;
     try {
       const data = await loadFile(f); if (!live()) return;
       const fitW = () => Math.min(body.clientWidth - 24, 900);
       if (k === 'img') {
         const img = new Image(); await new Promise((r, j) => { img.onload = r; img.onerror = j; img.src = data; }); if (!live()) return;
         const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; cv.getContext('2d').drawImage(img, 0, 0);
-        body.innerHTML = ''; body.append(cv);
+        cv.dataset.w = Math.min(img.naturalWidth, fitW()); body.innerHTML = ''; body.append(cv); applyZoom();
       } else if (k === 'pdf') {
         // PDF 엔진을 페이지 안에서 바로 돌려요 (별도 작업자 없이도 어디서나 열리게)
         await loadScript(LIBS.pdf); await loadScript(LIBS.pdfWorker); const lib = window.pdfjsLib;
         lib.GlobalWorkerOptions.workerSrc = LIBS.pdfWorker;
         const doc = await lib.getDocument({ data: dataBytes(data) }).promise; if (!live()) return;
-        body.innerHTML = ''; const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        body.innerHTML = ''; body.dataset.pages = doc.numPages; const dpr = Math.min(window.devicePixelRatio || 1, 2), w = fitW();
         for (let i = 1; i <= doc.numPages; i++) {
-          $('#vnote').textContent = `보기 전용 · ${i}/${doc.numPages}쪽`;
-          const page = await doc.getPage(i), v1 = page.getViewport({ scale: 1 }), scale = fitW() / v1.width * dpr, vp = page.getViewport({ scale });
-          const cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height); cv.style.width = Math.round(vp.width / dpr) + 'px';
+          $('#vnote').textContent = i < doc.numPages ? `보기 전용 · 쪽 그리는 중 ${i}/${doc.numPages}` : '보기 전용';
+          // 확대해도 흐리지 않게 조금 더 크게 그려 둬요
+          const page = await doc.getPage(i), v1 = page.getViewport({ scale: 1 }), scale = w / v1.width * dpr * 1.25, vp = page.getViewport({ scale });
+          const cv = document.createElement('canvas'); cv.className = 'pg'; cv.width = Math.round(vp.width); cv.height = Math.round(vp.height); cv.dataset.w = w; cv.style.width = Math.round(w * vZoom) + 'px';
           body.append(cv); await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise; if (!live()) return;
+          updatePage();
         }
-        $('#vnote').textContent = `보기 전용 · ${doc.numPages}쪽`;
+        $('#vnote').textContent = `보기 전용 · ${doc.numPages}쪽`; applyZoom();
       } else if (k === 'docx') {
         await loadScript(LIBS.docx);
         const r = await window.mammoth.convertToHtml({ arrayBuffer: dataBytes(data).buffer }); if (!live()) return;
@@ -1529,10 +1584,10 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
         d.querySelectorAll('script,iframe,object,embed,link,style').forEach(x => x.remove());
         d.querySelectorAll('*').forEach(x => [...x.attributes].forEach(a => { if (/^on/i.test(a.name) || (/^(href|src)$/i.test(a.name) && /^\s*javascript:/i.test(a.value))) x.removeAttribute(a.name); }));
         d.querySelectorAll('a').forEach(a => a.removeAttribute('href'));
-        body.innerHTML = ''; body.append(d);
+        body.innerHTML = ''; body.append(d); applyZoom();
       } else if (k === 'txt') {
         const d = document.createElement('div'); d.className = 'docv txt'; d.textContent = new TextDecoder('utf-8').decode(dataBytes(data));
-        body.innerHTML = ''; body.append(d);
+        body.innerHTML = ''; body.append(d); applyZoom();
       } else body.innerHTML = '<p class="vmsg">이 파일은 사이트에서 볼 수 없어요.</p>';
     } catch { if (live()) body.innerHTML = '<p class="vmsg">파일을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.</p>'; }
   }
