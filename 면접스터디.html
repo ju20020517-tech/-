@@ -369,6 +369,13 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
 .fbw .fqh .n{color:var(--faint);font-weight:500}
 .fbtab{border:1px solid var(--rule);border-radius:10px;overflow:hidden}
 .fbtab.sb .fbr{grid-template-columns:84px repeat(2,minmax(0,1fr))}
+.fbtab.fl .fbr{grid-template-columns:84px 82px minmax(0,1fr)}
+.fbtab.fl .cell.kd{display:flex;align-items:flex-start}
+.fbtab.fl .cell.tx{display:flex;gap:6px;align-items:flex-start}
+.fbtab.fl .cell.tx textarea{flex:1;min-width:0}
+.fbtab.fl .rm{border:0;background:none;color:var(--faint);cursor:pointer;font-size:16px;line-height:1;padding:0 2px}
+.fbtab.fl .rm:hover{color:var(--warn)}
+.fbadd{display:flex;flex-direction:column;gap:6px}
 .fbr{display:grid;grid-template-columns:84px repeat(3,minmax(0,1fr));border-top:1px solid var(--rule)}
 .fbr:first-child{border-top:0}
 .fbr>*{border-left:1px solid var(--rule);min-width:0}
@@ -537,7 +544,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       <li><b>공통 질문</b>에는 지원동기 같은 기본 질문 다섯 개가 조원마다 들어 있어요. 답변을 쓰면 말하는 시간이 자동으로 계산돼요(1분에 약 300자 기준).</li>
       <li><b>약점 질문</b>에는 면접관이 물어볼 만한 약한 부분을 질문으로 적고 답변을 준비해요. 따로 추가해도 되고, 공통·생기부 질문에서 <b>+ 약점 질문에 추가</b>를 누르거나 꼬리질문 표에서 <b>약점 질문에 추가</b>를 눌러 가져올 수도 있어요.</li>
       <li>피드백 표와 꼬리질문 표는 제목을 누르면 <b>접고 펼</b> 수 있어요. 이 기기에서 기억해요.</li>
-      <li>답변 아래 <b>피드백</b> 칸에서 <b>잘한 점 / 고칠 점 / 꼬리질문</b> 중 하나를 고르고 적어요. 내가 쓴 피드백은 ×로 지울 수 있어요.</li>
+      <li>답변 아래 <b>조원 피드백</b>에서 <b>잘한 점 / 고칠 점 / 꼬리질문</b> 중 하나를 고르고 적어 <b>남기기</b>를 눌러요. 표에는 피드백을 남긴 조원만 보이고, 내가 남긴 피드백은 표에서 바로 고치거나 ×로 지울 수 있어요.</li>
       <li>중요한 부분을 <b>드래그</b>하면 글자색, <mark>형광펜</mark>, 굵게, 밑줄을 바꿀 수 있어요.</li>
       <li>카드 왼쪽 위 <b>⠿</b>를 잡고 끌면 순서를 바꿔요. <b>삭제</b>하면 <b>휴지통</b>으로 가고, 실수하면 <b>되돌리기</b>(입력칸 밖에서 Ctrl+Z)를 눌러요.</li>
       <li>오른쪽 위 <b>면접 일정</b>은 지금 보고 있는 조원의 D-day예요. <b>인쇄</b>하면 그 조원의 답변과 피드백이 A4 파일로 만들어져요.</li>
@@ -749,23 +756,24 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     return [...fbs.values()].filter(f => ids.has(f.cardId) && isNewFb(f)).length;
   }
   const fbHas = f => ['good', 'fix', 'ask', 'ana', 'tail'].some(k => (f[k] || '').trim());
-  function fbRow(c, m) {
-    const d = fbs.get(c.id + '__' + m.id) || {}, mine = m.id === self;
-    const cells = fbKeys(c).map(([k, l]) => `<div class="cell" data-l="${l}" role="cell">${mine
-      ? `<textarea id="fb-${c.id}-${k}" data-k="${k}" rows="1" placeholder="${l}" aria-label="${esc(m.name)} ${l}">${esc(d[k] || '')}</textarea>`
-      : (esc(d[k] || '') || '<span class="none">–</span>')}</div>`).join('');
-    const nw = !mine && isNewFb(fbs.get(c.id + '__' + m.id), seenBase);
-    return `<div class="fbr${mine ? ' mine' : ''}" role="row" data-m="${esc(m.id)}"><span class="fbn" role="rowheader">${esc(m.name)}${mine ? '<small>나</small>' : ''}${nw ? '<span class="new">NEW</span>' : ''}</span>${cells}</div>`;
+  function fbRows(c, m) {
+    const key = c.id + '__' + m.id, d = fbs.get(key) || {}, mine = m.id === self, nw = !mine && isNewFb(d, seenBase);
+    return FBK.filter(([k]) => (d[k] || '').trim()).map(([k, l], i) => `<div class="fbr${mine ? ' mine' : ''}" role="row" data-m="${esc(m.id)}">
+      <span class="fbn" role="rowheader">${i ? '' : `${esc(m.name)}${mine ? '<small>나</small>' : ''}${nw ? '<span class="new">NEW</span>' : ''}`}</span>
+      <div class="cell kd" data-l="종류" role="cell"><span class="ty ${k}">${l}</span></div>
+      <div class="cell tx" data-l="내용" role="cell">${mine ? `<textarea id="fb-${c.id}-${k}" data-k="${k}" rows="1" aria-label="내 ${l}">${esc(d[k])}</textarea><button class="rm" type="button" data-rmk="${k}" aria-label="이 피드백 지우기">×</button>` : esc(d[k])}</div></div>`).join('');
   }
   function fbHTML(c) {
-    const rows = memberList().filter(m => m.id !== c.owner);
-    if (!rows.length) return '';
-    const n = rows.filter(m => fbHas(fbs.get(c.id + '__' + m.id) || {})).length;
-    const nn = rows.filter(m => isNewFb(fbs.get(c.id + '__' + m.id), seenBase)).length;
-    return `<details class="fbw" data-card="${c.id}"${folded.has(c.id) ? '' : ' open'}><summary class="fqh">${isQA(c.kind) ? '조원 피드백' : '조원 질문·분석'} <span class="n">${n ? n + '명' : ''}</span>${nn ? `<span class="newn">새 피드백 ${nn}</span>` : ''}</summary>
-      <div class="fbtab${isQA(c.kind) ? '' : ' sb'}" role="table" aria-label="조원 피드백"><div class="fbr fbhd" role="row"><span role="columnheader">조원</span>${fbKeys(c).map(([k, l]) => `<span class="${k}" role="columnheader">${l}</span>`).join('')}</div>
-      ${rows.map(m => fbRow(c, m)).join('')}</div>
-      ${members.has(self) ? (self === c.owner ? `<p class="fbnote">${isQA(c.kind) ? '내 답변이라 내 줄은 없어요. 조원들이 남긴 피드백이 여기 모여요.' : '내 생기부라 내 줄은 없어요. 조원들이 남긴 예상 질문과 분석이 여기 모여요.'}</p>` : '') : '<p class="fbnote">오른쪽 위 "나는"에서 이름을 고르면 내 줄에 피드백을 쓸 수 있어요.</p>'}</details>`;
+    if (c.draft) return '';
+    const ms = memberList().filter(m => m.id !== c.owner), wrote = ms.filter(m => fbHas(fbs.get(c.id + '__' + m.id) || {}));
+    const nn = wrote.filter(m => isNewFb(fbs.get(c.id + '__' + m.id), seenBase)).length;
+    const canWrite = members.has(self) && self !== c.owner;
+    const form = canWrite ? `<form class="fbadd" data-card="${c.id}"><div class="fbt" role="radiogroup" aria-label="피드백 종류">${FBK.map(([k, l], i) => `<label class="${k}"><input type="radio" name="fk-${c.id}" value="${k}"${i ? '' : ' checked'}>${l}</label>`).join('')}</div>
+      <div class="fqf"><input id="fbin-${c.id}" placeholder="${esc(nameOf(c.owner))} 님 답변에 피드백 남기기" aria-label="피드백" maxlength="400"><button type="submit">남기기</button></div></form>` : '';
+    const note = !members.has(self) ? '오른쪽 위 "나는"에서 이름을 고르면 피드백을 남길 수 있어요.' : !canWrite && !wrote.length ? '아직 조원이 남긴 피드백이 없어요.' : '';
+    return `<details class="fbw" data-card="${c.id}"${folded.has(c.id) ? '' : ' open'}><summary class="fqh">조원 피드백 <span class="n">${wrote.length ? wrote.length + '명' : ''}</span>${nn ? `<span class="newn">새 피드백 ${nn}</span>` : ''}</summary>
+      ${wrote.length ? `<div class="fbtab fl" role="table" aria-label="조원 피드백"><div class="fbr fbhd" role="row"><span role="columnheader">조원</span><span role="columnheader">종류</span><span role="columnheader">내용</span></div>${wrote.map(m => fbRows(c, m)).join('')}</div>` : ''}
+      ${form}${note ? `<p class="fbnote">${note}</p>` : ''}</details>`;
   }
   // 생기부 질문: 조원 꼬리질문 표 (꼬리질문을 쓴 조원만 + 내 입력 줄)
   function tailHTML(c) {
@@ -786,16 +794,18 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       ${rows.length ? `<div class="fbtab sb" role="table" aria-label="조원 꼬리질문"><div class="fbr fbhd" role="row"><span role="columnheader">조원</span><span class="ask" role="columnheader">꼬리질문</span><span class="good" role="columnheader">${esc(nameOf(c.owner))}의 답변</span></div>${rows.map(row).join('')}</div>` : ''}
       ${note ? `<p class="fbnote">${note}</p>` : ''}</details>`;
   }
-  function refreshFB(cardId) {
+  const pendingFb = new Set();      // 입력 중이라 미뤄 둔 표 새로 그리기
+  listEl.addEventListener('focusout', () => setTimeout(() => {
+    for (const id of [...pendingFb]) { const w = document.querySelector(`.fbw[data-card="${id}"]`); if (w && w.contains(document.activeElement)) continue; pendingFb.delete(id); refreshFB(id); }
+  }, 0));
+  function refreshFB(cardId, force) {
     const c = cards.get(cardId); if (!c) return;
-    if (c.kind === 'r') {
-      document.querySelectorAll(`.fbw[data-card="${cardId}"]`).forEach(w => {
-        if (w.contains(document.activeElement)) return;
-        const t = document.createElement('div'); t.innerHTML = tailHTML(c); const nw = t.firstElementChild;
-        if (nw) { w.replaceWith(nw); nw.querySelectorAll('.cell textarea').forEach(grow); }
-      });
-      return;
-    }
+    document.querySelectorAll(`.fbw[data-card="${cardId}"]`).forEach(w => {
+      if (!force && w.contains(document.activeElement)) { pendingFb.add(cardId); return; }
+      const t = document.createElement('div'); t.innerHTML = c.kind === 'r' ? tailHTML(c) : fbHTML(c); const nw = t.firstElementChild;
+      if (nw) { w.replaceWith(nw); nw.querySelectorAll('.cell textarea').forEach(grow); }
+    });
+    return;
     document.querySelectorAll(`.fbw[data-card="${cardId}"]`).forEach(w => {
       w.querySelectorAll('.fbr[data-m]').forEach(r => {
         if (r.contains(document.activeElement)) return;
@@ -824,11 +834,34 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     const w = t.closest('.fbw'), n = memberList().filter(m => m.id !== cards.get(cardId)?.owner && fbHas(fbs.get(cardId + '__' + m.id) || {})).length;
     w.querySelector('.fqh .n').textContent = n ? n + '명' : '';
     saveEl.textContent = '저장 중…'; clearTimeout(fbTimers.get(key));
-    fbTimers.set(key, setTimeout(() => {
-      fbTimers.delete(key);
-      if (local) { try { localStorage.setItem(LSFB, JSON.stringify([...fbs.values()])); } catch {} saveEl.textContent = '이 브라우저에 저장됨'; return; }
-      fcol.doc(key).set(d).then(() => { saveEl.textContent = '저장됨'; counts(); }).catch(() => { saveEl.textContent = '피드백을 저장하지 못했어요. 쓰기 권한을 확인해 주세요.'; });
-    }, 600));
+    fbTimers.set(key, setTimeout(() => { fbTimers.delete(key); persistFb(key, d); }, 600));
+  });
+  function persistFb(key, d) {
+    if (local) { try { localStorage.setItem(LSFB, JSON.stringify([...fbs.values()])); } catch {} saveEl.textContent = '이 브라우저에 저장됨'; counts(); return; }
+    fcol.doc(key).set(d).then(() => { saveEl.textContent = '저장됨'; counts(); }).catch(() => { saveEl.textContent = '피드백을 저장하지 못했어요. 쓰기 권한을 확인해 주세요.'; });
+  }
+  function setMyFb(cardId, k, text) {
+    const key = cardId + '__' + self;
+    const d = { ...(fbs.get(key) || {}), cardId, author: self, [k]: text, updated: Date.now() }; delete d.id;
+    fbs.set(key, { id: key, ...d }); clearTimeout(fbTimers.get(key)); fbTimers.delete(key);
+    persistFb(key, d);
+  }
+  // 종류를 골라 피드백 남기기 (같은 종류가 이미 있으면 줄을 바꿔 이어 붙여요)
+  listEl.addEventListener('submit', e => {
+    const f = e.target.closest('.fbadd'); if (!f) return;
+    e.preventDefault();
+    if (!members.has(self)) { toast('먼저 오른쪽 위 "나는"에서 내 이름을 골라 주세요'); return; }
+    const inp = f.querySelector('input[id^="fbin-"]'), text = inp.value.trim(); if (!text) return;
+    const cardId = f.dataset.card, k = (f.querySelector('input[type=radio]:checked') || {}).value || 'good';
+    const prev = ((fbs.get(cardId + '__' + self) || {})[k] || '').trim();
+    setMyFb(cardId, k, prev ? prev + '\n' + text : text);
+    refreshFB(cardId, true);
+    const again = document.getElementById('fbin-' + cardId); if (again) again.focus();
+  });
+  listEl.addEventListener('click', e => {
+    const b = e.target.closest('[data-rmk]'); if (!b || !members.has(self)) return;
+    const cardId = b.closest('.fbw').dataset.card;
+    setMyFb(cardId, b.dataset.rmk, ''); refreshFB(cardId, true); toast('피드백을 지웠어요');
   });
   // 생기부 질문 주인이 꼬리질문에 답 적기
   listEl.addEventListener('input', e => {
@@ -968,8 +1001,9 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     const fqP = c => { if (!o.fq) return '';
       if (c.kind === 'r') { const tr = memberList().filter(m => m.id !== c.owner).map(m => [m, (fbs.get(c.id + '__' + m.id) || {}).tail]).filter(([, t]) => (t || '').trim());
         return tr.length ? `<div class="fqp"><div class="lab">조원 꼬리질문</div><table class="fbp"><tr><th>조원</th><th>꼬리질문</th><th>답변</th></tr>${tr.map(([m, t]) => `<tr><td><b>${esc(m.name)}</b></td><td>${esc(t)}</td><td>${esc((c.tailAns || {})[m.id] || '')}</td></tr>`).join('')}</table></div>` : ''; }
-      const rows = memberList().filter(m => m.id !== c.owner).map(m => [m, fbs.get(c.id + '__' + m.id)]).filter(([, f]) => f && fbHas(f));
-      return rows.length ? `<div class="fqp"><div class="lab">${isQA(c.kind) ? '조원 피드백' : '조원 질문·분석'}</div><table class="fbp"><tr><th>조원</th>${fbKeys(c).map(([, l]) => `<th>${l}</th>`).join('')}</tr>${rows.map(([m, f]) => `<tr><td><b>${esc(m.name)}</b></td>${fbKeys(c).map(([k]) => `<td>${esc(f[k] || '')}</td>`).join('')}</tr>`).join('')}</table></div>` : ''; };
+      const rows = [];
+      memberList().filter(m => m.id !== c.owner).forEach(m => { const f = fbs.get(c.id + '__' + m.id) || {}; FBK.forEach(([k, l]) => { if ((f[k] || '').trim()) rows.push([m, k, l, f[k]]); }); });
+      return rows.length ? `<div class="fqp"><div class="lab">조원 피드백</div><table class="fbp"><tr><th>조원</th><th style="width:18mm">종류</th><th>내용</th></tr>${rows.map(([m, k, l, t]) => `<tr><td><b>${esc(m.name)}</b></td><td><span class="pt ${k}">${l}</span></td><td>${esc(t)}</td></tr>`).join('')}</table></div>` : ''; };
     const ownerP = () => '';
     const set = cards.get(setIdOf());
     const now = new Date(), stamp = `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()}`;
