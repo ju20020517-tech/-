@@ -1270,7 +1270,10 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   function answered(id) {
     const l = [...cards.values()].filter(c => c.owner === id && !c.trashed && !c.draft && isQA(c.kind) && toText(c.content).trim());
     const has = k => [...cards.values()].filter(c => c.owner === id && !c.trashed && !c.draft && inTab(c, k) && (c.question || '').trim()).length;
-    return { q: l.filter(c => c.kind === 'q').length, r: has('r'), w: has('w') };
+    // 공통 질문 전체 개수: 지운 질문은 빼고 센다. 아직 노트를 안 열어 본 조원은 기본 질문 수
+    const everQ = [...cards.values()].some(c => c.owner === id && c.kind === 'q');
+    const qTotal = everQ ? [...cards.values()].filter(c => c.owner === id && c.kind === 'q' && !c.trashed && (c.question || '').trim()).length : COMMON.length;
+    return { q: l.filter(c => c.kind === 'q').length, qTotal, r: has('r'), w: has('w') };
   }
   function renderPeople() {
     const ml = memberList();
@@ -1299,7 +1302,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       const next = ((set && set.ddays) || []).filter(x => x.date).map(x => ({ n: x.name || '면접', d: Math.round((Date.parse(x.date) - today) / 864e5) })).filter(x => x.d >= 0).sort((p, q) => p.d - q.d)[0];
       return `<button class="mcard${m.id === self ? ' me' : ''}" type="button" data-open="${esc(m.id)}">
         <span class="top"><span class="av">${esc(String(m.name).slice(0, 1))}</span><span class="nm">${esc(m.name)}<small>${m.id === self ? '내 면접 노트' : '면접 노트 · 눌러서 피드백'}</small></span></span>
-        <span class="st"><span>공통 답변</span><b>${a.q} / ${COMMON.length}</b><span>생기부 질문</span><b>${a.r}</b><span>약점 질문</span><b>${a.w}</b><span title="마지막으로 저장한 뒤에 새로 받은 피드백">저장 후 피드백</span><b>${nfb}</b></span>
+        <span class="st"><span>공통 답변</span><b>${a.q} / ${a.qTotal}</b><span>생기부 질문</span><b>${a.r}</b><span>약점 질문</span><b>${a.w}</b><span title="마지막으로 저장한 뒤에 새로 받은 피드백">저장 후 피드백</span><b>${nfb}</b></span>
         ${newCount(m.id) ? `<span class="nf">새 피드백 ${newCount(m.id)}</span>` : ''}
         <span class="dd">${next ? `${esc(next.n)} ${next.d ? 'D-' + next.d : 'D-DAY'}` : ''}</span></button>`;
     };
@@ -1580,7 +1583,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   }
   function counts() {
     const a = answered(state.member);
-    $('#nQ').textContent = a.q; $('#nW').textContent = a.w;
+    $('#nQ').textContent = `${a.q} / ${a.qTotal}`; $('#nW').textContent = a.w;
     const ids = new Set([...cards.values()].filter(c => c.owner === state.member && !c.trashed).map(c => c.id));
     $('#nF').textContent = fbSinceSave(state.member);
     $('#nR').textContent = a.r;
