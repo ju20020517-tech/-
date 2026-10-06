@@ -699,7 +699,8 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   // ---------- trash ----------
   function trash(c) {
     pushUndo('삭제', [c]);
-    if (c.draft) { cards.delete(c.id); render(); toast('카드를 지웠어요', true); return; }
+    // 기본 공통 질문은 처음엔 저장 전 상태라, 지운 것도 저장해야 새로고침 뒤 다시 생기지 않아요
+    if (c.draft && !(c.kind === 'q' && (c.question || '').trim())) { cards.delete(c.id); render(); toast('카드를 지웠어요', true); return; }
     c.trashed = Date.now(); queueSave(c); render(); toast('휴지통으로 옮겼어요', true);
   }
   function restore(c) { pushUndo('복원', [c]); delete c.trashed; queueSave(c); render(); toast('복원했어요'); }
@@ -1676,15 +1677,19 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   });
   $('#q').addEventListener('input', e => { state.q = e.target.value; state.view = 'cards'; render(); });
 
+  let recordsLoaded = false;
   function ensureDraft() {
+    if (!local && !recordsLoaded) return;
     if (state.kind === 'r' && self !== state.member) return;
     if (!members.has(state.member) || [...cards.values()].some(c => inTab(c, state.kind) && isMine(c) && !c.trashed)) return;
+    // 한 번이라도 저장한 카드가 있으면(지운 것 포함) 빈 카드나 기본 질문을 다시 만들지 않아요
+    if ([...cards.values()].some(c => c.kind === state.kind && isMine(c) && !c.draft)) return;
     if (state.kind === 'q') COMMON.forEach((q, i) => { const c = blank('q', q); c.order = i; c.created += i; cards.set(c.id, c); });
     else { const c = blank(state.kind); cards.set(c.id, c); }
   }
   function prune() {
     let changed = false;
-    const saved = [...cards.values()].filter(x => !x.draft && !x.trashed);
+    const saved = [...cards.values()].filter(x => !x.draft);
     for (const [id, c] of cards) {
       if (!c.draft || toText(c.content).trim()) continue;
       const dup = c.kind === 'q' ? saved.some(x => x.kind === 'q' && x.owner === c.owner && x.question === c.question) : !c.subject && !c.question && saved.some(x => x.kind === c.kind && x.owner === c.owner);
@@ -1707,6 +1712,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       structural = true;
       if (!had) structural = true;
     });
+    if (!recordsLoaded) { recordsLoaded = true; ensureDraft(); structural = true; }
     if (prune()) structural = true;
     if (structural && !focusId && !drag) render();
     else if (structural) { needRender = true; if (drag) { counts(); return; } counts(); renderDday(); }
