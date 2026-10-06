@@ -1004,7 +1004,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       const per = others(c).map(m => { const f = fbs.get(c.id + '__' + m.id) || {}; return [m, FBK.filter(([k]) => (f[k] || '').trim()).map(([k, l]) => [k, l, f[k].trim()])]; }).filter(([, r]) => r.length);
       if (!per.length) return '';
       return `<table class="fb"><colgroup><col style="width:17mm"><col style="width:17mm"><col></colgroup>
-        <thead><tr><th colspan="3">조원 피드백</th></tr><tr class="sub"><th>조원</th><th>종류</th><th>내용</th></tr></thead><tbody>${per.map(([m, rows]) => rows.map(([k, l, t], i) => `<tr${i ? '' : ' class="first"'}>${i ? '' : `<td class="who" rowspan="${rows.length}">${esc(m.name)}</td>`}<td><span class="pt ${k}">${l}</span></td><td class="tx">${esc(t)}</td></tr>`).join('')).join('')}</tbody></table>`;
+        <thead><tr><th colspan="3">조원 피드백</th></tr></thead><tbody>${per.map(([m, rows]) => rows.map(([k, l, t], i) => `<tr${i ? '' : ' class="first"'}>${i ? '' : `<td class="who" rowspan="${rows.length}">${esc(m.name)}</td>`}<td><span class="pt ${k}">${l}</span></td><td class="tx">${esc(t)}</td></tr>`).join('')).join('')}</tbody></table>`;
     };
     const tailTable = c => {
       const rows = others(c).map(m => [m, ((fbs.get(c.id + '__' + m.id) || {}).tail || '').trim()]).filter(([, t]) => t);
@@ -1027,87 +1027,73 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
           c.askedBy && c.askedBy !== c.owner ? `<span class="tag by">${esc(josa(nameOf(c.askedBy), '이', '가'))} 적어 준 질문</span>` : '',
         ].join('');
         const fb = o.fq ? (c.kind === 'r' ? tailTable(c) : fbTable(c)) : '';
-        const fit = !sp.n ? '' : sp.html.includes('pill ok') ? ['ok', '적당해요'] : sp.html.includes('pill long') ? ['long', '조금 길어요'] : ['over', '너무 길어요'];
         return `<article class="qa">
-          <div class="q"><span class="ql">Q${i + 1}</span><div class="qt"><h3>${esc(c.question)}</h3>${meta ? `<div class="meta">${meta}</div>` : ''}</div></div>
+          <div class="head"><div class="qno">Q${i + 1}</div><div class="qt"><h3>${esc(c.question)}</h3>${meta ? `<div class="meta">${meta}</div>` : ''}</div>${ans ? `<div class="time">${sp.t}<small>${sp.n}자</small></div>` : ''}</div>
           <div class="ans${ans ? '' : ' none'}">${ans ? body(c.content) : '아직 답변이 없어요.'}</div>
-          ${ans ? `<div class="foot"><span class="tm">말하면 약 <b>${sp.t}</b></span><span class="ch">${sp.n}자</span><span class="fit ${fit[0]}">${fit[1]}</span></div>` : ''}
-          ${fb ? `<div class="fbs">${fb}</div>` : ''}</article>`;
+          ${fb}</article>`;
       }).join('');
-      return `<section class="grp"><h2><span class="no">${gi + 1}</span>${name}<small>${list.length}개</small></h2>${qs}</section>`;
+      return `<section class="grp"><h2><span class="no">${String(gi + 1).padStart(2, '0')}</span>${name}<small>${list.length}개</small></h2>${qs}</section>`;
     }).filter(Boolean).join('');
     const S = '<' + 'script>', SE = '<' + '/script>';
     return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(nameOf(state.member))} 면접 답변 노트</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-@page{size:A4;margin:14mm 14mm 15mm}
-@page{@bottom-center{content:counter(page) " / " counter(pages);font:7.5pt "IBM Plex Sans KR",sans-serif;color:#9AA4B2}}
+@page{size:A4;margin:15mm 15mm 16mm}
+@page{@bottom-center{content:counter(page) " / " counter(pages);font:8pt "IBM Plex Sans KR",sans-serif;color:#9A8A93}}
 *{box-sizing:border-box}
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{margin:0;font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#1E2530;font-size:10pt;line-height:1.7;background:#fff;word-break:keep-all;overflow-wrap:anywhere}
-.page{max-width:182mm;margin:0 auto}
-/* 표지 머리 */
-.cover{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;padding:0 0 4.5mm;border-bottom:.6mm solid #27344A;margin-bottom:8mm}
-.cover .k{margin:0 0 1.2mm;font-size:7.8pt;font-weight:600;letter-spacing:.2em;color:#5A79A8}
-h1{font-family:"Gowun Batang",serif;font-size:21pt;font-weight:700;line-height:1.2;margin:0;color:#1F2A3C}
-.sum{display:flex;flex-wrap:wrap;gap:1.5mm 4mm;margin:2.5mm 0 0;font-size:8.3pt;color:#7A8595}
-.sum b{color:#27344A;font-weight:600}
-.sum .st{color:#A0A9B6}
-.dds{display:flex;gap:2mm;flex:none}
-.dd{min-width:19mm;padding:1.6mm 3mm;border-radius:2mm;background:#F1F5FB;border:.25mm solid #DCE5F1;text-align:center;line-height:1.25}
-.dd span{display:block;font-size:7.4pt;color:#6E7C90}
-.dd b{font-family:"Gowun Batang",serif;font-size:13.5pt;color:#2D5A9B}
-/* 구역 제목 */
+body{margin:0;font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#231A20;font-size:9.8pt;line-height:1.7;background:#fff;word-break:keep-all;overflow-wrap:anywhere}
+.page{max-width:180mm;margin:0 auto}
+.cover{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;padding-bottom:4mm;border-bottom:.6mm solid #231A20;margin-bottom:2mm}
+.cover .k{font-size:8pt;font-weight:600;letter-spacing:.18em;color:#C23A74;margin:0 0 1mm}
+h1{font-family:"Gowun Batang",serif;font-size:21pt;line-height:1.25;margin:0}
+.cover .m{text-align:right;font-size:8.5pt;color:#7A6A73;line-height:1.6}
+.dd{display:inline-flex;align-items:baseline;gap:1.5mm;margin-left:3mm}
+.dd b{font-family:"Gowun Batang",serif;font-size:12pt;color:#C23A74}
+.sum{font-size:8.5pt;color:#7A6A73;margin:0 0 7mm}
 .grp+.grp{margin-top:9mm}
-h2{display:flex;align-items:center;gap:2.4mm;font-family:"Gowun Batang",serif;font-size:13.5pt;font-weight:700;margin:0 0 4mm;color:#1F2A3C;break-after:avoid}
-h2 .no{width:6mm;height:6mm;border-radius:50%;background:#27344A;color:#fff;font-family:"IBM Plex Sans KR",sans-serif;font-size:8pt;font-weight:600;display:flex;align-items:center;justify-content:center}
-h2::after{content:"";flex:1;height:.25mm;background:#DCE2EA;margin-left:1mm}
-h2 small{order:2;font-family:"IBM Plex Sans KR",sans-serif;font-size:8pt;font-weight:400;color:#9AA4B2}
-/* 질문 카드 */
-.qa{border:.3mm solid #C9D3E0;border-radius:2.2mm;margin:0 0 5mm;background:#fff;overflow:hidden;break-inside:avoid}
-.q{display:flex;gap:3mm;align-items:flex-start;padding:2.8mm 4.5mm;background:#F5F8FC;border-bottom:.25mm solid #DFE6EF}
-.ql{flex:none;min-width:8mm;height:5.6mm;padding:0 1.6mm;margin-top:.4mm;border-radius:2.8mm;background:#2D5A9B;color:#fff;font-size:8pt;font-weight:600;display:flex;align-items:center;justify-content:center}
+h2{display:flex;align-items:baseline;gap:2.5mm;font-family:"Gowun Batang",serif;font-size:14pt;margin:0 0 3.5mm;padding-bottom:1.5mm;border-bottom:.3mm solid #E9D3DE;break-after:avoid}
+h2 .no{font-family:"IBM Plex Sans KR",sans-serif;font-size:9pt;font-weight:600;color:#C23A74;letter-spacing:.06em}
+h2 small{margin-left:auto;font-family:"IBM Plex Sans KR",sans-serif;font-size:8.5pt;font-weight:400;color:#9A8A93}
+.qa{margin:0 0 6mm;padding:0 0 5mm;border-bottom:.2mm dashed #E9D3DE}
+.qa:last-child{border-bottom:0}
+.head{display:flex;align-items:flex-start;gap:3mm;break-after:avoid}
+.qno{flex:none;min-width:8.5mm;height:6mm;padding:0 1.5mm;border-radius:3mm;background:#C23A74;color:#fff;font-size:8.5pt;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:.6mm}
 .qt{flex:1;min-width:0}
-h3{font-family:"Gowun Batang",serif;font-size:11.8pt;font-weight:700;line-height:1.5;margin:0;color:#1F2A3C}
+h3{font-family:"Gowun Batang",serif;font-size:11.8pt;font-weight:700;line-height:1.5;margin:0}
 .meta{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:1.2mm}
-.tag{font-size:7.5pt;line-height:1.5;padding:.2mm 2mm;border-radius:2mm;background:#fff;border:.25mm solid #D5DDE8;color:#4E5B6C}
-.tag.weak{background:#FDECEA;border-color:#F4C9C3;color:#A33A2C;font-weight:600}
-.tag.by{background:#FFF3EA;border-color:#F6D5BF;color:#A1482A}
-.ans{padding:3.6mm 5mm 3.8mm;font-size:10.6pt;line-height:1.9;color:#161C25}
-.ans.none{color:#A0A9B6;font-size:9pt}
-.foot{display:flex;align-items:center;gap:3mm;padding:1.5mm 5mm;font-size:8pt;color:#7A8595;background:#FAFBFD;border-top:.25mm dashed #DFE6EF}
-.foot b{color:#27344A;font-weight:600}
-.foot .ch{color:#A0A9B6}
-.fit{margin-left:auto;font-size:7.4pt;font-weight:600;padding:.2mm 2.2mm;border-radius:2mm}
-.fit.ok{background:#E3F4E8;color:#2D7446}.fit.long{background:#FFF1DE;color:#A35B12}.fit.over{background:#FDECEA;color:#A33A2C}
-/* 조원 표 */
-.fbs{padding:3mm 5mm 3.8mm;border-top:.25mm solid #DFE6EF}
-table.fb{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:8.6pt;line-height:1.55;border:.25mm solid #DFE6EF;border-radius:1.6mm;overflow:hidden}
-.fb thead tr:first-child th{text-align:left;font-size:7.8pt;font-weight:600;letter-spacing:.04em;color:#2D5A9B;padding:1.3mm 2.4mm;background:#F1F5FB;border-bottom:.25mm solid #DFE6EF}
-.fb thead tr.sub th{text-align:left;font-size:7.4pt;font-weight:500;color:#9AA4B2;padding:.9mm 2.4mm;background:#fff;border-bottom:.25mm solid #DFE6EF}
-.fb td{vertical-align:top;padding:1.3mm 2.4mm;border-top:.25mm solid #EEF2F6}
-.fb tbody tr:first-child td{border-top:0}
-.fb td+td{border-left:.25mm solid #EEF2F6}
-.fb td.who{font-weight:600;color:#1F2A3C;background:#FAFBFD}
-.fb td.tx{white-space:pre-wrap;color:#2A323D}
+.tag{font-size:7.6pt;line-height:1.5;padding:.3mm 2mm;border-radius:2mm;background:#F6EEF2;color:#6E5A66}
+.tag.weak{background:#FBE3DF;color:#A33A2C;font-weight:600}
+.tag.by{background:#FFF0E6;color:#A1482A}
+.time{flex:none;text-align:right;font-size:9pt;font-weight:600;color:#C23A74;line-height:1.3;margin-top:.6mm}
+.time small{display:block;font-size:7.5pt;font-weight:400;color:#9A8A93}
+.ans{margin:3mm 0 0;padding:3.2mm 4.5mm;background:#F6F6F7;border:.25mm solid #E4E4E7;border-radius:1.6mm;font-size:10.4pt;line-height:1.85;color:#1F1A1D;break-inside:avoid}
+.ans.none{color:#A898A1;font-size:9pt;background:#FAFAFA}
+table.fb{width:100%;margin:2.5mm 0 0;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:8.6pt;line-height:1.55;border:.25mm solid #E9D3DE;border-radius:1.5mm;overflow:hidden}
+.fb thead th{text-align:left;font-size:7.8pt;font-weight:600;color:#8A6E7D;background:#FBF3F7;padding:1.3mm 2.5mm;letter-spacing:.04em}
+.fb thead tr.sub th{font-weight:500;color:#9A8A93;background:#fff;border-top:.25mm solid #F1E2E9}
+.fb td{vertical-align:top;padding:1.4mm 2.5mm;border-top:.25mm solid #F1E2E9}
+.fb tr:not(.first) td{border-top-style:dotted}
+.fb td.who{font-weight:600;color:#3A2A33;border-right:.25mm solid #F1E2E9}
+.fb td.tx{white-space:pre-wrap}
 .fb tr{break-inside:avoid}
-.pt{display:inline-block;font-size:7.3pt;font-weight:600;line-height:1.5;padding:0 1.6mm;border-radius:2mm;white-space:nowrap}
-.pt.good{background:#E3F4E8;color:#2D7446}.pt.fix{background:#FFEBDD;color:#A1482A}.pt.ask{background:#E6EEFA;color:#2D5A9B}
-.none{color:#A0A9B6}
+.pt{display:inline-block;font-size:7.4pt;font-weight:600;line-height:1.5;padding:0 1.6mm;border-radius:2mm;white-space:nowrap}
+.pt.good{background:#E3F4E8;color:#2D7446}.pt.fix{background:#FFE8DC;color:#A1482A}.pt.ask{background:#FCE3EE;color:#B32E68}
+.none{color:#A898A1}
 [data-fc=red]{color:#C62828}[data-fc=blue]{color:#1565C0}[data-fc=green]{color:#2E7D32}[data-fc=purple]{color:#7B1FA2}[data-fc=orange]{color:#D9480F}
-[data-hl]{color:#161C25;padding:0 .4mm;border-radius:.5mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+[data-hl]{color:#231A20;border-radius:.5mm;padding:0 .4mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 [data-hl=yellow]{background:#FFEF8A}[data-hl=green]{background:#C6F0C2}[data-hl=pink]{background:#FFCFE1}[data-hl=blue]{background:#CBE5FF}
-.empty{color:#A0A9B6;text-align:center;padding:30mm 0}
-.hint{position:sticky;top:0;z-index:2;background:#1F2A3C;color:#fff;padding:10px 16px;font-size:14px;display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap}
-.hint button{font:inherit;font-weight:600;background:#2D5A9B;color:#fff;border:0;border-radius:8px;padding:6px 16px;cursor:pointer}
+.empty{color:#A898A1;text-align:center;padding:30mm 0}
+.hint{position:sticky;top:0;z-index:2;background:#231A20;color:#fff;padding:10px 16px;font-size:14px;display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap}
+.hint button{font:inherit;font-weight:600;background:#C23A74;color:#fff;border:0;border-radius:8px;padding:6px 16px;cursor:pointer}
 @media print{.hint{display:none}}
-@media screen{body{background:#E9EDF2}.page{background:#fff;padding:14mm;margin:16px auto;box-shadow:0 2px 14px rgba(0,0,0,.12);max-width:210mm}}
+@media screen{body{background:#EFE6EA}.page{background:#fff;padding:15mm;margin:16px auto;box-shadow:0 2px 14px rgba(0,0,0,.12);max-width:210mm}}
 </style></head><body>
 ${auto ? `<div class="hint">인쇄 창에서 'PDF로 저장'을 고르면 PDF 파일로도 만들 수 있어요. <button onclick="print()">인쇄하기</button></div>` : ''}
 <div class="page">
-<header class="cover"><div><p class="k">면접 스터디 노트</p><h1>${esc(nameOf(state.member))}의 면접 답변</h1>
-<p class="sum">${groups.map(([k, n]) => `<span>${n} <b>${items(k).length}</b></span>`).join('')}<span class="st">${stamp} 인쇄</span></p></div>
-${dds.length ? `<div class="dds">${dds.map(x => `<div class="dd"><span>${esc(x.name)}</span><b>${x.label}</b></div>`).join('')}</div>` : ''}</header>
+<header class="cover"><div><p class="k">INTERVIEW NOTE</p><h1>${esc(nameOf(state.member))}의 면접 답변</h1></div>
+<div class="m">${dds.length ? `<div>${dds.map(x => `<span class="dd">${esc(x.name)} <b>${x.label}</b></span>`).join('')}</div>` : ''}<div>${stamp} 인쇄</div></div></header>
+<p class="sum">${groups.map(([k, n]) => `${n} ${items(k).length}개`).join(' · ')}${o.fq ? ' · 조원 피드백 포함' : ''}</p>
 ${secs || '<p class="empty">인쇄할 질문이 없어요.</p>'}</div>
 ${auto ? `${S}window.addEventListener('load',()=>setTimeout(()=>print(),400));${SE}` : ''}
 </body></html>`;
