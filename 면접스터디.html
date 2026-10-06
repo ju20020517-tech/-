@@ -1348,10 +1348,10 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
           ${txt ? `<div class="tx">${clean(c.content)}</div>` : `<div class="tx none">${c ? '고른 질문에 아직 답변이 없어요.' : isMe ? '오른쪽 위 목록에서 내 노트의 답변을 골라 주세요.' : '아직 답변을 고르지 않았어요.'}</div>`}</div>
         <div class="cm" role="cell">${txt ? `<span class="pill ${sp.html.match(/pill (\w*)/)?.[1] || ''}">약 ${sp.t}</span><span>${sp.n}자</span>` : ''}${nfb ? `<span>피드백 ${nfb}</span>` : ''}${c ? `<button class="go" type="button" data-open="${esc(m.id)}" data-gocard="${esc(c.id)}">노트 →</button>` : ''}</div></div>`;
     }).join('');
-    const canDel = members.has(self) && (!t.createdBy || t.createdBy === self);
+    const canDel = members.has(self), armed = tArm && tArm.id === t.id && Date.now() < tArm.until;
     return `<p class="cmpintro">같은 질문에 조원들이 어떻게 답했는지 나란히 봐요. 질문을 추가하면 조원마다 자기 노트에서 맞는 답변을 골라 연결해요.</p>
       ${addForm}<div class="qpick">${pick}</div>
-      <div class="cmphead"><h2 class="cmpq">Q. ${esc(t.text)}</h2>${t.createdBy ? `<span class="by">${esc(josa(nameOf(t.createdBy), '이', '가'))} 추가한 질문</span>` : ''}${canDel ? '<button class="btn danger" type="button" id="tdel">질문 삭제</button>' : ''}</div>
+      <div class="cmphead"><h2 class="cmpq">Q. ${esc(t.text)}</h2>${t.createdBy ? `<span class="by">${esc(josa(nameOf(t.createdBy), '이', '가'))} 추가한 질문</span>` : ''}${canDel ? `<button class="btn danger${armed ? ' arm' : ''}" type="button" id="tdel">${armed ? '한 번 더 누르면 삭제' : '질문 삭제'}</button>` : ''}</div>
       <div class="cmpsum"><span><b>${answeredN}</b> / ${memberList().length}명 답변</span><label class="cmpopt"><input type="checkbox" id="cmpHide"${state.cmpHide ? ' checked' : ''}> 답변 없는 조원 숨기기</label></div>
       <div class="cmp${state.cmpHide ? ' hide-empty' : ''}" role="table" aria-label="조원 답변 모아 보기">${blocks}</div>`;
   }
@@ -1377,18 +1377,33 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     const ct = e.target.closest('[data-ct]'); if (ct) { state.cmpT = ct.dataset.ct; render(); return; }
     if (e.target.id === 'cmpHide') { state.cmpHide = e.target.checked; listEl.querySelector('.cmp')?.classList.toggle('hide-empty', state.cmpHide); return; }
     const del = e.target.closest('#tdel');
-    if (del) arm(del, '정말 삭제', () => {
-      const id = state.cmpT; topics.delete(id);
-      if (local) lsTL(); else tcol.doc(id).delete().catch(() => {});
+    if (del) {
+      const id = state.cmpT;
+      if (!(tArm && tArm.id === id && Date.now() < tArm.until)) {
+        tArm = { id, until: Date.now() + 4000 }; render();
+        setTimeout(() => { if (tArm && tArm.id === id && Date.now() >= tArm.until) { tArm = null; if (state.view === 'home' && state.home === 'compare') render(); } }, 4100);
+        return;
+      }
+      tArm = null; topics.delete(id);
+      const ls = [...links.values()].filter(l => l.topicId === id); ls.forEach(l => links.delete(l.id));
+      if (local) lsTL();
+      else { tcol.doc(id).delete().catch(() => toast('질문을 삭제하지 못했어요')); ls.forEach(l => lcol.doc(l.id).delete().catch(() => {})); }
       state.cmpT = topicList()[0]?.id; render(); toast('질문을 삭제했어요');
-    });
+    }
   });
+  let tArm = null, topicsLoaded = false, topicsSeeding = false;
+  // 기본 모아 보기 질문은 스터디방이 처음 만들어질 때 한 번만 넣어요. 다 지워도 다시 생기지 않게 표시를 남겨요
+  function seedTopicsOnce() {
+    if (local || !topicsLoaded || !recordsLoaded || !col || cards.has('meta-topics') || topicsSeeding) return;
+    topicsSeeding = true;
+    if (!topics.size) DEFAULT_TOPICS.forEach(([id, text], i) => saveTopic({ id, text, order: i, created: i }).catch(() => {}));
+    const meta = { kind: 'meta', topicsSeeded: true, created: 0 };
+    cards.set('meta-topics', { id: 'meta-topics', ...meta }); col.doc('meta-topics').set(meta).catch(() => { topicsSeeding = false; });
+  }
   function applyTL(map) {
     return snap => {
       snap.docChanges().forEach(ch => { if (ch.type === 'removed') map.delete(ch.doc.id); else map.set(ch.doc.id, { id: ch.doc.id, ...ch.doc.data() }); });
-      if (map === topics && !topics.size && !snap.metadata.fromCache && !applyTL.seeded) {
-        applyTL.seeded = true; DEFAULT_TOPICS.forEach(([id, text], i) => saveTopic({ id, text, order: i, created: i }).catch(() => {}));
-      }
+      if (map === topics && !snap.metadata.fromCache) { topicsLoaded = true; seedTopicsOnce(); }
       const a = document.activeElement;
       if (state.view === 'home' && state.home === 'compare' && !(a && (a.id === 'tnew' || (a.closest && a.closest('.lk'))))) renderHome();
     };
@@ -1712,7 +1727,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       structural = true;
       if (!had) structural = true;
     });
-    if (!recordsLoaded) { recordsLoaded = true; ensureDraft(); structural = true; }
+    if (!recordsLoaded) { recordsLoaded = true; ensureDraft(); seedTopicsOnce(); structural = true; }
     if (prune()) structural = true;
     if (structural && !focusId && !drag) render();
     else if (structural) { needRender = true; if (drag) { counts(); return; } counts(); renderDday(); }
@@ -1734,7 +1749,9 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       if (!ml.length) ml = DEFAULT_MEMBERS.map(([id, name], i) => ({ id, name, order: i }));
       ml.forEach(m => members.set(m.id, m));
       try { JSON.parse(localStorage.getItem('study-topics') || '[]').forEach(t => topics.set(t.id, t)); JSON.parse(localStorage.getItem('study-links') || '[]').forEach(l => links.set(l.id, l)); } catch {}
-      if (!topics.size) DEFAULT_TOPICS.forEach(([id, text], i) => topics.set(id, { id, text, order: i, created: i }));
+      let seeded = false; try { seeded = !!localStorage.getItem('study-topics-seeded'); } catch {}
+      if (!topics.size && !seeded) DEFAULT_TOPICS.forEach(([id, text], i) => topics.set(id, { id, text, order: i, created: i }));
+      try { localStorage.setItem('study-topics-seeded', '1'); } catch {}
       lsLoad().forEach(c => cards.set(c.id, { ...c, draft: false }));
       try { JSON.parse(localStorage.getItem(LSFB) || '[]').forEach(f => fbs.set(f.id, f)); } catch {}
       prune();
