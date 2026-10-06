@@ -313,14 +313,22 @@ body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .sbl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .sbl li{display:flex;align-items:center;gap:10px;border:1px solid var(--rule);border-radius:10px;padding:8px 10px;background:var(--ground)}
 .sbl .fi{flex:none;width:38px;height:38px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--paper);background:var(--accent)}
-.sbl .fi.img{background:var(--g2i)}
+.sbl .fi.img{background:var(--g2i)}.sbl .fi.doc{background:#2D5A9B}.sbl .fi.txt{background:var(--soft)}
 .sbl .fn{flex:1;min-width:0;display:flex;flex-direction:column}
 .sbl .fn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sbl .fn small{font-size:12px;color:var(--faint)}
 .vpanel{background:var(--paper);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(900px,100%);max-height:calc(100% - 32px);display:flex;flex-direction:column;overflow:hidden}
 .vh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--rule)}
 .vh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vbody{overflow:auto;background:var(--ground);display:grid;place-items:center;min-height:200px}
+.vbody{flex:1 1 auto;overflow:auto;background:#5b5458;min-height:200px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:12px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.vbody canvas{display:block;max-width:100%;height:auto;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none}
+.vbody .vmsg{color:#fff;font-size:14px;padding:30px 0}
+.vbody .docv{background:#fff;color:#1a1a1a;width:min(800px,100%);padding:32px 36px;line-height:1.75;font-size:15px;box-shadow:0 2px 10px rgba(0,0,0,.35);white-space:normal;overflow-wrap:anywhere}
+.vbody .docv.txt{white-space:pre-wrap}
+.vbody .docv table{border-collapse:collapse;width:100%}.vbody .docv td,.vbody .docv th{border:1px solid #bbb;padding:4px 6px;vertical-align:top}
+.vbody .docv img{max-width:100%}
+.vpanel{height:calc(100% - 32px)}
+.vh .vn{font-size:12px;color:var(--faint);font-weight:500;white-space:nowrap}
 .vbody img{max-width:100%;height:auto;display:block}
 .sbgrid{display:flex;flex-direction:column;gap:12px;margin-top:6px}
 .mcard .sbt{font-size:11px;font-weight:700;color:var(--g2i);background:var(--g2);border-radius:999px;padding:1px 8px;width:max-content}
@@ -573,7 +581,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       <li>오른쪽 <b>나는</b>에서 내 이름을 골라 두세요. 내 노트의 답변은 나만 고칠 수 있고, 친구 노트에서는 피드백 표의 내 줄과 약점 질문만 쓸 수 있어요. 한 번 고르면 이 기기에서 기억해요.</li>
       <li>내가 안 본 사이 달린 피드백에는 <b>NEW</b>가 붙고, 첫 화면 카드에도 <b>새 피드백</b> 개수가 떠요.</li>
       <li>첫 화면의 <b>질문별로 모아 보기</b>에서 모아 볼 질문을 직접 추가할 수 있어요. 각자 자기 칸의 <b>내 답변 고르기</b>에서 내 노트의 답변 중 맞는 걸 고르면, 조원들 답변이 그 질문 아래 나란히 모여요. 공통 질문과 똑같은 질문은 자동으로 연결돼요.</li>
-      <li>첫 화면 <b>생기부 보기</b>에서 각자 생기부를 PDF나 사진으로 올리고, 친구 생기부를 볼 수 있어요.</li>
+      <li>첫 화면 <b>생기부 보기</b>에서 각자 생기부를 PDF·사진·워드(.docx)·글(.txt)로 올리고, 친구 생기부를 사이트 안에서 볼 수 있어요. 파일 받기는 안 돼요.</li>
       <li><b>생기부 질문</b>에는 내 생기부에서 나올 만한 질문을 적고, <b>관련 과목</b>과 <b>생기부 쪽수</b>를 함께 적어요. 조원들은 아래 <b>조원 꼬리질문</b> 표에 꼬리질문을 남기고, 나는 그 옆 칸에 답을 적어요. 표에는 꼬리질문을 쓴 조원만 보여요.</li>
       <li><b>저장 후 피드백</b>은 내가 그 카드를 마지막으로 저장한 뒤에 새로 달린 피드백 수예요. 피드백을 보고 답변을 고쳐 저장하면 다시 0부터 세요.</li>
       <li><b>공통 질문</b>에는 지원동기 같은 기본 질문 다섯 개가 조원마다 들어 있어요. 답변을 쓰면 말하는 시간이 자동으로 계산돼요(1분에 약 300자 기준).</li>
@@ -589,7 +597,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   <div class="list" id="list"></div>
 </div>
 
-<div class="scrim" id="viewer" hidden><div class="vpanel" role="dialog" aria-modal="true" aria-labelledby="vname"><div class="vh"><b id="vname"></b><button class="btn" type="button" id="vdl">받기</button><button class="btn" type="button" id="vclose">닫기</button></div><div class="vbody" id="vbody"></div></div></div>
+<div class="scrim" id="viewer" hidden><div class="vpanel" role="dialog" aria-modal="true" aria-labelledby="vname"><div class="vh"><b id="vname"></b><span class="vn" id="vnote"></span><button class="btn" type="button" id="vclose">닫기</button></div><div class="vbody" id="vbody"></div></div></div>
 <div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastUndo" type="button">되돌리기</button></div>
 
 <div class="scrim" id="printSheet" hidden>
@@ -1347,7 +1355,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     if (state.home === 'compare') { listEl.innerHTML = `<section class="home">${tabs}${compareHTML()}</section>`; return; }
     if (state.home === 'sb') {
       const ml = memberList(), order = members.has(self) ? [members.get(self), ...ml.filter(m => m.id !== self)] : ml;
-      listEl.innerHTML = `<section class="home">${tabs}<p class="cmpintro">조원들이 올린 생기부를 모아 봐요. 내 칸에서 생기부를 PDF나 사진으로 올리면 조원 모두 볼 수 있어요.</p>
+      listEl.innerHTML = `<section class="home">${tabs}<p class="cmpintro">조원들이 올린 생기부를 모아 봐요. 내 칸에서 생기부를 올리면 조원 모두 이 사이트 안에서 볼 수 있어요. 파일로 받을 수는 없어요.</p>
         ${members.has(self) ? '' : '<div class="lockbar">오른쪽 위 <b>나는</b>에서 내 이름을 골라야 내 생기부를 올릴 수 있어요.</div>'}
         <div class="sbgrid">${order.map(m => sbPanelHTML(m.id)).join('')}</div>
         <p class="fbnote">생기부에는 개인정보가 들어 있어요. 이 노트 주소는 조원끼리만 나눠 주세요.</p></section>`;
@@ -1490,15 +1498,29 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   }
   const readDataURL = file => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
   const fileCards = mid => [...cards.values()].filter(c => c.kind === 'file' && c.owner === mid).sort((a, b) => (a.created || 0) - (b.created || 0));
+  // 올릴 수 있는 파일: PDF, 사진, 워드(.docx), 글(.txt)
+  const FT = { pdf: 'application/pdf', img: 'image/jpeg', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', txt: 'text/plain' };
+  const kindOf = f => f.type === FT.pdf ? 'pdf' : (f.type || '').startsWith('image/') ? 'img' : f.type === FT.docx ? 'docx' : f.type === FT.txt ? 'txt' : 'other';
+  const KLABEL = { pdf: 'PDF', img: '사진', docx: '워드', txt: '글', other: '파일' };
+  function fileKind(file) {
+    const n = file.name.toLowerCase(), t = file.type || '';
+    if (t === FT.pdf || n.endsWith('.pdf')) return 'pdf';
+    if (t.startsWith('image/') || /\.(jpe?g|png|gif|webp|heic|heif|bmp)$/.test(n)) return 'img';
+    if (t === FT.docx || n.endsWith('.docx')) return 'docx';
+    if (t === 'text/plain' || n.endsWith('.txt')) return 'txt';
+    if (/\.(hwp|hwpx)$/.test(n)) return 'hwp';
+    if (n.endsWith('.doc')) return 'doc';
+    return '';
+  }
   const kb = n => n > 1e6 ? (n / 1e6).toFixed(1) + 'MB' : Math.max(1, Math.round(n / 1e3)) + 'KB';
   let sbProg = '';
   function sbPanelHTML(mid) {
     const mine = !!self && self === mid, fl = fileCards(mid);
     const up = !mine ? '' : local ? '<p class="fbnote">파일 올리기는 친구들과 같이 쓰는 저장소에 연결됐을 때만 돼요.</p>'
-      : `<label class="btn pri sbup">+ 생기부 올리기<input type="file" id="sbFile" accept="application/pdf,image/*" multiple aria-label="생기부 파일 고르기"></label>`;
+      : `<label class="btn pri sbup">+ 생기부 올리기<input type="file" id="sbFile" accept="application/pdf,image/*,.docx,.txt" multiple aria-label="생기부 파일 고르기"></label>`;
     const d = ms => { const x = new Date(ms); return `${x.getMonth() + 1}월 ${x.getDate()}일`; };
-    const rows = fl.map(f => { const pdf = f.type === 'application/pdf'; return `<li data-file="${esc(f.id)}"><span class="fi${pdf ? '' : ' img'}">${pdf ? 'PDF' : '사진'}</span><span class="fn"><b>${esc(f.name)}</b><small>${kb(f.size || 0)} · ${d(f.created || 0)}</small></span><button class="btn" type="button" data-fview>보기</button>${mine ? '<button class="btn danger" type="button" data-fdel>삭제</button>' : ''}</li>`; }).join('');
-    return `<section class="sbbox" aria-label="생기부 파일"><div class="sbh"><div><h3>${esc(nameOf(mid))}의 생기부</h3><p>${mine ? 'PDF나 사진으로 올려요. 조원 모두 볼 수 있어요. (PDF는 8MB까지)' : `파일 ${fl.length}개`}</p></div>${up}</div>
+    const rows = fl.map(f => { const k = kindOf(f); return `<li data-file="${esc(f.id)}"><span class="fi ${k}">${KLABEL[k]}</span><span class="fn"><b>${esc(f.name)}</b><small>${kb(f.size || 0)} · ${d(f.created || 0)}</small></span><button class="btn" type="button" data-fview>보기</button>${mine ? '<button class="btn danger" type="button" data-fdel>삭제</button>' : ''}</li>`; }).join('');
+    return `<section class="sbbox" aria-label="생기부 파일"><div class="sbh"><div><h3>${esc(nameOf(mid))}의 생기부</h3><p>${mine ? 'PDF, 사진, 워드(.docx), 글(.txt) 파일을 올려요. 조원들은 이 사이트 안에서만 볼 수 있어요.' : `파일 ${fl.length}개`}</p></div>${up}</div>
       ${sbProg ? `<p class="sbprog">${esc(sbProg)}</p>` : ''}
       ${fl.length ? `<ul class="sbl">${rows}</ul>` : `<p class="fbnote">아직 올린 생기부가 없어요.</p>`}
       </section>`;
@@ -1507,16 +1529,18 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   async function uploadSb(files) {
     let ok = 0;
     for (const file of files) {
-      const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name), img = (file.type || '').startsWith('image/');
-      if (!pdf && !img) { toast('PDF나 사진만 올릴 수 있어요'); continue; }
-      if (pdf && file.size > 8e6) { toast(`${file.name}은(는) 8MB보다 커서 올릴 수 없어요`); continue; }
+      const k = fileKind(file);
+      if (k === 'hwp' || k === 'doc') { toast(`${k === 'hwp' ? '한글(HWP)' : '예전 워드(.doc)'} 파일은 바로 볼 수 없어요. PDF나 .docx로 저장해서 올려 주세요`); continue; }
+      if (!k) { toast('PDF, 사진, 워드(.docx), 글(.txt) 파일만 올릴 수 있어요'); continue; }
+      if (k !== 'img' && file.size > 8e6) { toast(`${file.name}은(는) 8MB보다 커서 올릴 수 없어요`); continue; }
       const id = 'f' + newId(); let n = 0;
       try {
         setProg(`${file.name} 준비 중…`);
-        const data = pdf ? await readDataURL(file) : await shrinkImage(file, 2000, 0.85);
+        let data = k === 'img' ? await shrinkImage(file, 2000, 0.85) : await readDataURL(file);
+        if (k !== 'img') data = 'data:' + FT[k] + data.slice(data.indexOf(';'));   // 종류를 정확히 적어 둬요
         const CH = 400000; n = Math.ceil(data.length / CH);
         for (let i = 0; i < n; i++) { setProg(`${file.name} 올리는 중… ${Math.round(i / n * 100)}%`); await qcol.doc(`${id}-${i}`).set({ fileId: id, i, owner: self, data: data.slice(i * CH, (i + 1) * CH) }); }
-        const meta = { kind: 'file', owner: self, name: file.name, type: pdf ? 'application/pdf' : 'image/jpeg', size: Math.round(data.length * 0.75), chunks: n, created: Date.now() };
+        const meta = { kind: 'file', owner: self, name: file.name, type: FT[k], size: Math.round(data.length * 0.75), chunks: n, created: Date.now() };
         cards.set(id, { id, ...meta }); await col.doc(id).set(meta); ok++;
       } catch { cards.delete(id); for (let i = 0; i < n; i++) qcol.doc(`${id}-${i}`).delete().catch(() => {}); toast(`${file.name}을(를) 올리지 못했어요`); }
     }
@@ -1530,16 +1554,13 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     if (!data.startsWith('data:')) throw new Error('missing');
     fileData.set(f.id, data); return data;
   }
-  function dataToBlob(data) { const [h, b] = data.split(','), bin = atob(b), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: (h.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream' }); }
   let vFile = null;
-  function closeViewer() { $('#viewer').hidden = true; $('#vbody').innerHTML = ''; vFile = null; }
+  function closeViewer() { vToken++; $('#viewer').hidden = true; $('#vbody').innerHTML = ''; vFile = null; }
   $('#vclose').addEventListener('click', closeViewer);
   $('#viewer').addEventListener('click', e => { if (e.target.id === 'viewer') closeViewer(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#viewer').hidden) closeViewer(); });
-  $('#vdl').addEventListener('click', async () => {
-    if (!vFile) return;
-    const a = document.createElement('a'); a.href = URL.createObjectURL(dataToBlob(await loadFile(vFile))); a.download = vFile.name; document.body.append(a); a.click(); a.remove();
-  });
+  // 보기 전용: 길게 눌러 저장·끌어 놓기·오른쪽 클릭 막기
+  ['contextmenu', 'dragstart'].forEach(t => $('#viewer').addEventListener(t, e => e.preventDefault()));
   listEl.addEventListener('change', e => { if (e.target.id === 'sbFile' && e.target.files.length) { const fs = [...e.target.files]; e.target.value = ''; uploadSb(fs); } });
   listEl.addEventListener('click', async e => {
     const li = e.target.closest('.sbl li'); if (!li) return;
@@ -1555,21 +1576,51 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       return;
     }
     if (!e.target.closest('[data-fview]')) return;
-    const pdf = f.type === 'application/pdf';
-    const w = pdf ? window.open('', '_blank') : null;     // 팝업 차단을 피하려고 누르자마자 새 탭을 열어 둬요
-    if (w) w.document.write('<p style="font:16px sans-serif;padding:24px">생기부를 불러오는 중…</p>');
-    try {
-      toast('불러오는 중…');
-      const data = await loadFile(f);
-      if (pdf) {
-        const url = URL.createObjectURL(dataToBlob(data));
-        if (w) w.location.href = url; else { const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.append(a); a.click(); a.remove(); }
-        $('#toast').hidden = true;
-      } else {
-        vFile = f; $('#vname').textContent = f.name; $('#vbody').innerHTML = `<img src="${data}" alt="${esc(f.name)}">`; $('#viewer').hidden = false; $('#toast').hidden = true;
-      }
-    } catch { if (w) w.close(); toast('파일을 불러오지 못했어요'); }
+    openViewer(f);
   });
+  const LIBS = { pdf: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js', pdfWorker: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js', docx: 'https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js' };
+  const libP = {};
+  const loadScript = src => libP[src] || (libP[src] = new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = src; sc.onload = res; sc.onerror = () => { delete libP[src]; rej(new Error('lib')); }; document.head.append(sc); }));
+  function dataBytes(data) { const b = atob(data.slice(data.indexOf(',') + 1)), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; }
+  let vToken = 0;
+  async function openViewer(f) {
+    const my = ++vToken, body = $('#vbody'), k = kindOf(f), live = () => my === vToken && !$('#viewer').hidden;
+    vFile = f; $('#vname').textContent = f.name; $('#vnote').textContent = '보기 전용';
+    body.innerHTML = '<p class="vmsg">불러오는 중…</p>'; $('#viewer').hidden = false;
+    try {
+      const data = await loadFile(f); if (!live()) return;
+      const fitW = () => Math.min(body.clientWidth - 24, 900);
+      if (k === 'img') {
+        const img = new Image(); await new Promise((r, j) => { img.onload = r; img.onerror = j; img.src = data; }); if (!live()) return;
+        const cv = document.createElement('canvas'); cv.width = img.naturalWidth; cv.height = img.naturalHeight; cv.getContext('2d').drawImage(img, 0, 0);
+        body.innerHTML = ''; body.append(cv);
+      } else if (k === 'pdf') {
+        // PDF 엔진을 페이지 안에서 바로 돌려요 (별도 작업자 없이도 어디서나 열리게)
+        await loadScript(LIBS.pdf); await loadScript(LIBS.pdfWorker); const lib = window.pdfjsLib;
+        lib.GlobalWorkerOptions.workerSrc = LIBS.pdfWorker;
+        const doc = await lib.getDocument({ data: dataBytes(data) }).promise; if (!live()) return;
+        body.innerHTML = ''; const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        for (let i = 1; i <= doc.numPages; i++) {
+          $('#vnote').textContent = `보기 전용 · ${i}/${doc.numPages}쪽`;
+          const page = await doc.getPage(i), v1 = page.getViewport({ scale: 1 }), scale = fitW() / v1.width * dpr, vp = page.getViewport({ scale });
+          const cv = document.createElement('canvas'); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height); cv.style.width = Math.round(vp.width / dpr) + 'px';
+          body.append(cv); await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise; if (!live()) return;
+        }
+        $('#vnote').textContent = `보기 전용 · ${doc.numPages}쪽`;
+      } else if (k === 'docx') {
+        await loadScript(LIBS.docx);
+        const r = await window.mammoth.convertToHtml({ arrayBuffer: dataBytes(data).buffer }); if (!live()) return;
+        const d = document.createElement('div'); d.className = 'docv'; d.innerHTML = r.value || '<p>(내용 없음)</p>';
+        d.querySelectorAll('script,iframe,object,embed,link,style').forEach(x => x.remove());
+        d.querySelectorAll('*').forEach(x => [...x.attributes].forEach(a => { if (/^on/i.test(a.name) || (/^(href|src)$/i.test(a.name) && /^\s*javascript:/i.test(a.value))) x.removeAttribute(a.name); }));
+        d.querySelectorAll('a').forEach(a => a.removeAttribute('href'));
+        body.innerHTML = ''; body.append(d);
+      } else if (k === 'txt') {
+        const d = document.createElement('div'); d.className = 'docv txt'; d.textContent = new TextDecoder('utf-8').decode(dataBytes(data));
+        body.innerHTML = ''; body.append(d);
+      } else body.innerHTML = '<p class="vmsg">이 파일은 사이트에서 볼 수 없어요.</p>';
+    } catch { if (live()) body.innerHTML = '<p class="vmsg">파일을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 열어 주세요.</p>'; }
+  }
 
   // ----- 조원 관리 -----
   const mgrPanel = $('#mgrPanel'), mgrBtn = $('#mgrBtn');
