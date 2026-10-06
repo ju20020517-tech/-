@@ -28,6 +28,7 @@
         doc: id => ({
           set: data => ref.child(id).set(plain(data)),
           delete: () => ref.child(id).remove(),
+          get: () => ref.child(id).once('value').then(s => ({ id, exists: s.exists(), data: () => s.val() })),
         }),
         get: () => ref.once('value').then(s => {
           const docs = Object.entries(s.val() || {}).map(([id, d]) => snapDoc(id, d));

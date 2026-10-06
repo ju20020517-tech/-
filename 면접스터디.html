@@ -52,6 +52,7 @@ window.STUDY_ROOM = "jpEvyJQMqNzAy4qa";
         doc: id => ({
           set: data => ref.child(id).set(plain(data)),
           delete: () => ref.child(id).remove(),
+          get: () => ref.child(id).once('value').then(s => ({ id, exists: s.exists(), data: () => s.val() })),
         }),
         get: () => ref.once('value').then(s => {
           const docs = Object.entries(s.val() || {}).map(([id, d]) => snapDoc(id, d));
@@ -90,7 +91,7 @@ window.STUDY_ROOM = "jpEvyJQMqNzAy4qa";
 })();
 </script>
 <meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>면접 스터디 노트</title>
+<title>초엘리트 면접 스터디 노트</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
@@ -289,7 +290,39 @@ body.is-dragging{user-select:none;-webkit-user-select:none;cursor:grabbing}
 .self{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--soft)}
 .self select{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--rule);border-radius:999px;padding:5px 10px;background:var(--paper);color:var(--accent)}
 .self.need select{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
-.mrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
+.mrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:6px;align-items:center}
+.av{overflow:hidden}
+.av img,.mav img{width:100%;height:100%;object-fit:cover;display:block}
+.mav{position:relative;width:34px;height:34px;border-radius:50%;background:var(--accent-tint);color:var(--accent);display:grid;place-items:center;font-family:var(--serif);font-weight:700;overflow:hidden;cursor:pointer;border:1.5px dashed var(--accent)}
+.mav.has{border-style:solid}
+.mav input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.prm{font:inherit;font-size:11px;border:0;background:none;color:var(--faint);cursor:pointer;padding:2px 4px;white-space:nowrap}
+.prm:hover{color:var(--warn)}
+.mrow .sp{grid-column:1/-1;font-size:11px;color:var(--faint);margin:-2px 0 2px 40px}
+.nhead .nt{display:flex;align-items:center;gap:10px}
+.nhead .av{width:38px;height:38px;flex:none;border-radius:50%;background:var(--accent-tint);color:var(--accent);display:grid;place-items:center;font-size:17px}
+.sbbtn{margin-left:auto}
+.sbbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.sbbox{background:var(--paper);border:1.5px solid var(--rule);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.sbh{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px 12px}
+.sbh h3{margin:0;font-family:var(--serif);font-size:18px}
+.sbh p{margin:2px 0 0;font-size:13px;color:var(--soft)}
+.sbup{position:relative;overflow:hidden;cursor:pointer}
+.sbup input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.sbprog{font-size:13px;color:var(--accent);font-weight:600;margin:0}
+.sbl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.sbl li{display:flex;align-items:center;gap:10px;border:1px solid var(--rule);border-radius:10px;padding:8px 10px;background:var(--ground)}
+.sbl .fi{flex:none;width:38px;height:38px;border-radius:8px;display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--paper);background:var(--accent)}
+.sbl .fi.img{background:var(--g2i)}
+.sbl .fn{flex:1;min-width:0;display:flex;flex-direction:column}
+.sbl .fn b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbl .fn small{font-size:12px;color:var(--faint)}
+.vpanel{background:var(--paper);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.3);width:min(900px,100%);max-height:calc(100% - 32px);display:flex;flex-direction:column;overflow:hidden}
+.vh{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--rule)}
+.vh b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vbody{overflow:auto;background:var(--ground);display:grid;place-items:center;min-height:200px}
+.vbody img{max-width:100%;height:auto;display:block}
+.mcard .sbt{font-size:11px;font-weight:700;color:var(--g2i);background:var(--g2);border-radius:999px;padding:1px 8px;width:max-content}
 .mrow input{font:inherit;font-size:14px;border:1px solid var(--rule);border-radius:7px;padding:5px 8px;background:var(--ground);color:var(--ink);min-width:0}
 #mgrRows{display:flex;flex-direction:column;gap:6px}
 #people{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -483,7 +516,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
 <div class="wrap">
   <header>
     <div>
-      <h1>면접 스터디 노트</h1>
+      <h1>초엘리트 면접 스터디 노트</h1>
       <p class="sub">조원마다 면접 답변을 따로 쓰고, 서로의 답변에 피드백을 남겨요.</p>
     </div>
     <div class="stats">
@@ -539,6 +572,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       <li>오른쪽 <b>나는</b>에서 내 이름을 골라 두세요. 내 노트의 답변은 나만 고칠 수 있고, 친구 노트에서는 피드백 표의 내 줄과 약점 질문만 쓸 수 있어요. 한 번 고르면 이 기기에서 기억해요.</li>
       <li>내가 안 본 사이 달린 피드백에는 <b>NEW</b>가 붙고, 첫 화면 카드에도 <b>새 피드백</b> 개수가 떠요.</li>
       <li>첫 화면의 <b>질문별로 모아 보기</b>에서 모아 볼 질문을 직접 추가할 수 있어요. 각자 자기 칸의 <b>내 답변 고르기</b>에서 내 노트의 답변 중 맞는 걸 고르면, 조원들 답변이 그 질문 아래 나란히 모여요. 공통 질문과 똑같은 질문은 자동으로 연결돼요.</li>
+      <li>노트 위쪽 <b>생기부 파일</b>을 누르면 각자 생기부를 PDF나 사진으로 올리고, 친구 생기부를 볼 수 있어요. <b>조원 관리</b>에서 동그라미를 누르면 프로필 사진을 넣을 수 있어요.</li>
       <li><b>생기부 질문</b>에는 내 생기부에서 나올 만한 질문을 적고, <b>관련 과목</b>과 <b>생기부 쪽수</b>를 함께 적어요. 조원들은 아래 <b>조원 꼬리질문</b> 표에 꼬리질문을 남기고, 나는 그 옆 칸에 답을 적어요. 표에는 꼬리질문을 쓴 조원만 보여요.</li>
       <li><b>저장 후 피드백</b>은 내가 그 카드를 마지막으로 저장한 뒤에 새로 달린 피드백 수예요. 피드백을 보고 답변을 고쳐 저장하면 다시 0부터 세요.</li>
       <li><b>공통 질문</b>에는 지원동기 같은 기본 질문 다섯 개가 조원마다 들어 있어요. 답변을 쓰면 말하는 시간이 자동으로 계산돼요(1분에 약 300자 기준).</li>
@@ -554,6 +588,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   <div class="list" id="list"></div>
 </div>
 
+<div class="scrim" id="viewer" hidden><div class="vpanel" role="dialog" aria-modal="true" aria-labelledby="vname"><div class="vh"><b id="vname"></b><button class="btn" type="button" id="vdl">받기</button><button class="btn" type="button" id="vclose">닫기</button></div><div class="vbody" id="vbody"></div></div></div>
 <div class="toast" id="toast" hidden role="status"><span id="toastMsg"></span><button id="toastUndo" type="button">되돌리기</button></div>
 
 <div class="scrim" id="printSheet" hidden>
@@ -1278,7 +1313,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   function renderPeople() {
     const ml = memberList();
     if (ml.length && !members.has(state.member)) state.member = members.has(self) ? self : ml[0].id;
-    $('#people').innerHTML = state.view === 'home' ? '' : `<div class="nhead"><button class="btn" type="button" data-home="1">← 조원 목록</button><h2 class="nt">${esc(nameOf(state.member))}의 면접 노트</h2></div>
+    $('#people').innerHTML = state.view === 'home' ? '' : `<div class="nhead"><button class="btn" type="button" data-home="1">← 조원 목록</button><h2 class="nt"><span class="av">${avHTML(members.get(state.member))}</span>${esc(nameOf(state.member))}의 면접 노트</h2><button class="btn sbbtn" type="button" data-sb="1" aria-pressed="${!!state.sbOpen}">생기부 파일 ${fileCards(state.member).length}</button></div>
       <div class="nsw" role="tablist" aria-label="다른 조원 노트">${ml.map(m => `<button type="button" role="tab" data-who="${esc(m.id)}" aria-pressed="${state.member === m.id}" aria-selected="${state.member === m.id}">${esc(m.name)}</button>`).join('')}</div>`;
     document.body.classList.toggle('home-view', state.view === 'home');
     const sel = $('#selfSel'), opts = `<option value="">이름 고르기</option>` + ml.map(m => `<option value="${esc(m.id)}"${m.id === self ? ' selected' : ''}>${esc(m.name)}</option>`).join('');
@@ -1289,7 +1324,8 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   $('#people').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.home) { state.view = 'home'; render(); window.scrollTo(0, 0); return; }
-    openNote(b.dataset.who);
+    if (b.dataset.sb) { state.sbOpen = !state.sbOpen; if (state.view === 'trash') state.view = 'cards'; render(); return; }
+    if (b.dataset.who) openNote(b.dataset.who);
   });
   function openNote(id) {
     state.member = id; state.view = 'cards'; editSess.clear(); markSeen(id); ensureDraft(); render(); window.scrollTo(0, 0);
@@ -1301,9 +1337,10 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       const set = cards.get('set-' + m.id), now = new Date(), today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
       const next = ((set && set.ddays) || []).filter(x => x.date).map(x => ({ n: x.name || '면접', d: Math.round((Date.parse(x.date) - today) / 864e5) })).filter(x => x.d >= 0).sort((p, q) => p.d - q.d)[0];
       return `<button class="mcard${m.id === self ? ' me' : ''}" type="button" data-open="${esc(m.id)}">
-        <span class="top"><span class="av">${esc(String(m.name).slice(0, 1))}</span><span class="nm">${esc(m.name)}<small>${m.id === self ? '내 면접 노트' : '면접 노트 · 눌러서 피드백'}</small></span></span>
+        <span class="top"><span class="av">${avHTML(m)}</span><span class="nm">${esc(m.name)}<small>${m.id === self ? '내 면접 노트' : '면접 노트 · 눌러서 피드백'}</small></span></span>
         <span class="st"><span>공통 답변</span><b>${a.q} / ${a.qTotal}</b><span>생기부 질문</span><b>${a.r}</b><span>약점 질문</span><b>${a.w}</b><span title="마지막으로 저장한 뒤에 새로 받은 피드백">저장 후 피드백</span><b>${nfb}</b></span>
         ${newCount(m.id) ? `<span class="nf">새 피드백 ${newCount(m.id)}</span>` : ''}
+        ${fileCards(m.id).length ? `<span class="sbt">생기부 파일 ${fileCards(m.id).length}</span>` : ''}
         <span class="dd">${next ? `${esc(next.n)} ${next.d ? 'D-' + next.d : 'D-DAY'}` : ''}</span></button>`;
     };
     const tabs = `<div class="hometabs" role="tablist"><button type="button" role="tab" data-home-tab="members" aria-selected="${state.home !== 'compare'}">조원별 노트</button><button type="button" role="tab" data-home-tab="compare" aria-selected="${state.home === 'compare'}">질문별로 모아 보기</button></div>`;
@@ -1346,7 +1383,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
         </select></label>` : '';
       const src = c && (a.linked || a.auto) && (c.question || '').trim() !== t.text.trim() ? `<div class="src">내 노트의 "${esc(c.question.trim().slice(0, 40))}" 답변</div>` : '';
       return `<div class="crow${isMe ? ' me' : ''}${txt ? '' : ' noans'}" role="row">
-        <div class="cn" role="rowheader"><span class="av">${esc(String(m.name).slice(0, 1))}</span><b>${esc(m.name)}</b>${isMe ? '<span class="who">나</span>' : ''}</div>
+        <div class="cn" role="rowheader"><span class="av">${avHTML(m)}</span><b>${esc(m.name)}</b>${isMe ? '<span class="who">나</span>' : ''}</div>
         <div class="cb" role="cell">${opts}${src}
           ${txt ? `<div class="tx">${clean(c.content)}</div>` : `<div class="tx none">${c ? '고른 질문에 아직 답변이 없어요.' : isMe ? '오른쪽 위 목록에서 내 노트의 답변을 골라 주세요.' : '아직 답변을 고르지 않았어요.'}</div>`}</div>
         <div class="cm" role="cell">${txt ? `<span class="pill ${sp.html.match(/pill (\w*)/)?.[1] || ''}">약 ${sp.t}</span><span>${sp.n}자</span>` : ''}${nfb ? `<span>피드백 ${nfb}</span>` : ''}${c ? `<button class="go" type="button" data-open="${esc(m.id)}" data-gocard="${esc(c.id)}">노트 →</button>` : ''}</div></div>`;
@@ -1426,10 +1463,110 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     if (self && state.view !== 'home') { state.member = self; ensureDraft(); }
     render();
   });
+  // ----- 프로필 사진 · 생기부 파일 -----
+  const avHTML = m => m && m.photo ? `<img src="${esc(m.photo)}" alt="">` : esc(String((m && m.name) || '?').slice(0, 1));
+  function shrinkImage(file, max, q, square) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => {
+        let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+        if (square) { const m = Math.min(sw, sh); sx = (sw - m) / 2; sy = (sh - m) / 2; sw = sh = m; }
+        const r = Math.min(1, max / Math.max(sw, sh)), cv = document.createElement('canvas');
+        cv.width = Math.max(1, Math.round(sw * r)); cv.height = Math.max(1, Math.round(sh * r));
+        const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); g.drawImage(img, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url); res(cv.toDataURL('image/jpeg', q));
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('image')); };
+      img.src = url;
+    });
+  }
+  const readDataURL = file => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file); });
+  const fileCards = mid => [...cards.values()].filter(c => c.kind === 'file' && c.owner === mid).sort((a, b) => (a.created || 0) - (b.created || 0));
+  const kb = n => n > 1e6 ? (n / 1e6).toFixed(1) + 'MB' : Math.max(1, Math.round(n / 1e3)) + 'KB';
+  let sbProg = '';
+  function sbPanelHTML() {
+    const mid = state.member, mine = !!self && self === mid, fl = fileCards(mid);
+    const up = !mine ? '' : local ? '<p class="fbnote">파일 올리기는 친구들과 같이 쓰는 저장소에 연결됐을 때만 돼요.</p>'
+      : `<label class="btn pri sbup">+ 생기부 올리기<input type="file" id="sbFile" accept="application/pdf,image/*" multiple aria-label="생기부 파일 고르기"></label>`;
+    const d = ms => { const x = new Date(ms); return `${x.getMonth() + 1}월 ${x.getDate()}일`; };
+    const rows = fl.map(f => { const pdf = f.type === 'application/pdf'; return `<li data-file="${esc(f.id)}"><span class="fi${pdf ? '' : ' img'}">${pdf ? 'PDF' : '사진'}</span><span class="fn"><b>${esc(f.name)}</b><small>${kb(f.size || 0)} · ${d(f.created || 0)}</small></span><button class="btn" type="button" data-fview>보기</button>${mine ? '<button class="btn danger" type="button" data-fdel>삭제</button>' : ''}</li>`; }).join('');
+    return `<section class="sbbox" aria-label="생기부 파일"><div class="sbh"><div><h3>${esc(nameOf(mid))}의 생기부</h3><p>${mine ? 'PDF나 사진으로 올려요. 조원 모두 볼 수 있어요. (PDF는 8MB까지)' : '눌러서 보고, 생기부 질문을 만들 때 참고해요.'}</p></div>${up}</div>
+      ${sbProg ? `<p class="sbprog">${esc(sbProg)}</p>` : ''}
+      ${fl.length ? `<ul class="sbl">${rows}</ul>` : `<p class="fbnote">아직 올린 생기부가 없어요.</p>`}
+      <p class="fbnote">생기부에는 개인정보가 들어 있어요. 이 노트 주소는 조원끼리만 나눠 주세요.</p></section>`;
+  }
+  function setProg(t) { sbProg = t; const el = listEl.querySelector('.sbprog'); if (el && t) el.textContent = t; else render(); }
+  async function uploadSb(files) {
+    let ok = 0;
+    for (const file of files) {
+      const pdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name), img = (file.type || '').startsWith('image/');
+      if (!pdf && !img) { toast('PDF나 사진만 올릴 수 있어요'); continue; }
+      if (pdf && file.size > 8e6) { toast(`${file.name}은(는) 8MB보다 커서 올릴 수 없어요`); continue; }
+      const id = 'f' + newId(); let n = 0;
+      try {
+        setProg(`${file.name} 준비 중…`);
+        const data = pdf ? await readDataURL(file) : await shrinkImage(file, 2000, 0.85);
+        const CH = 400000; n = Math.ceil(data.length / CH);
+        for (let i = 0; i < n; i++) { setProg(`${file.name} 올리는 중… ${Math.round(i / n * 100)}%`); await qcol.doc(`${id}-${i}`).set({ fileId: id, i, owner: self, data: data.slice(i * CH, (i + 1) * CH) }); }
+        const meta = { kind: 'file', owner: self, name: file.name, type: pdf ? 'application/pdf' : 'image/jpeg', size: Math.round(data.length * 0.75), chunks: n, created: Date.now() };
+        cards.set(id, { id, ...meta }); await col.doc(id).set(meta); ok++;
+      } catch { cards.delete(id); for (let i = 0; i < n; i++) qcol.doc(`${id}-${i}`).delete().catch(() => {}); toast(`${file.name}을(를) 올리지 못했어요`); }
+    }
+    sbProg = ''; render(); if (ok) toast(`생기부 파일 ${ok}개를 올렸어요`);
+  }
+  const fileData = new Map();
+  async function loadFile(f) {
+    if (fileData.has(f.id)) return fileData.get(f.id);
+    const parts = await Promise.all(Array.from({ length: f.chunks || 0 }, (_, i) => qcol.doc(`${f.id}-${i}`).get()));
+    const data = parts.map(sn => { const d = sn && typeof sn.data === 'function' ? sn.data() : null; return (d && d.data) || ''; }).join('');
+    if (!data.startsWith('data:')) throw new Error('missing');
+    fileData.set(f.id, data); return data;
+  }
+  function dataToBlob(data) { const [h, b] = data.split(','), bin = atob(b), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new Blob([u], { type: (h.match(/data:([^;]+)/) || [])[1] || 'application/octet-stream' }); }
+  let vFile = null;
+  function closeViewer() { $('#viewer').hidden = true; $('#vbody').innerHTML = ''; vFile = null; }
+  $('#vclose').addEventListener('click', closeViewer);
+  $('#viewer').addEventListener('click', e => { if (e.target.id === 'viewer') closeViewer(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#viewer').hidden) closeViewer(); });
+  $('#vdl').addEventListener('click', async () => {
+    if (!vFile) return;
+    const a = document.createElement('a'); a.href = URL.createObjectURL(dataToBlob(await loadFile(vFile))); a.download = vFile.name; document.body.append(a); a.click(); a.remove();
+  });
+  listEl.addEventListener('change', e => { if (e.target.id === 'sbFile' && e.target.files.length) { const fs = [...e.target.files]; e.target.value = ''; uploadSb(fs); } });
+  listEl.addEventListener('click', async e => {
+    const li = e.target.closest('.sbl li'); if (!li) return;
+    const f = cards.get(li.dataset.file); if (!f) return;
+    if (e.target.closest('[data-fdel]')) {
+      if (self !== f.owner) return;
+      arm(e.target.closest('[data-fdel]'), '정말 삭제', () => {
+        cards.delete(f.id); fileData.delete(f.id);
+        col.doc(f.id).delete().catch(() => toast('삭제하지 못했어요'));
+        for (let i = 0; i < (f.chunks || 0); i++) qcol.doc(`${f.id}-${i}`).delete().catch(() => {});
+        render(); toast('생기부 파일을 지웠어요');
+      });
+      return;
+    }
+    if (!e.target.closest('[data-fview]')) return;
+    const pdf = f.type === 'application/pdf';
+    const w = pdf ? window.open('', '_blank') : null;     // 팝업 차단을 피하려고 누르자마자 새 탭을 열어 둬요
+    if (w) w.document.write('<p style="font:16px sans-serif;padding:24px">생기부를 불러오는 중…</p>');
+    try {
+      toast('불러오는 중…');
+      const data = await loadFile(f);
+      if (pdf) {
+        const url = URL.createObjectURL(dataToBlob(data));
+        if (w) w.location.href = url; else { const a = document.createElement('a'); a.href = url; a.download = f.name; document.body.append(a); a.click(); a.remove(); }
+        $('#toast').hidden = true;
+      } else {
+        vFile = f; $('#vname').textContent = f.name; $('#vbody').innerHTML = `<img src="${data}" alt="${esc(f.name)}">`; $('#viewer').hidden = false; $('#toast').hidden = true;
+      }
+    } catch { if (w) w.close(); toast('파일을 불러오지 못했어요'); }
+  });
+
   // ----- 조원 관리 -----
   const mgrPanel = $('#mgrPanel'), mgrBtn = $('#mgrBtn');
   function renderMgr() {
-    $('#mgrRows').innerHTML = memberList().map(m => `<div class="mrow" data-id="${esc(m.id)}"><input id="mn-${esc(m.id)}" value="${esc(m.name)}" maxlength="20" aria-label="조원 이름"><button class="btn danger" type="button">지우기</button></div>`).join('');
+    $('#mgrRows').innerHTML = memberList().map(m => `<div class="mrow" data-id="${esc(m.id)}"><label class="mav${m.photo ? ' has' : ''}" title="프로필 사진 바꾸기">${avHTML(m)}<input type="file" accept="image/*" data-photo="${esc(m.id)}" aria-label="${esc(m.name)} 프로필 사진"></label><input id="mn-${esc(m.id)}" value="${esc(m.name)}" maxlength="20" aria-label="조원 이름">${m.photo ? `<button class="prm" type="button" data-prm="${esc(m.id)}">사진 빼기</button>` : '<span></span>'}<button class="btn danger" type="button">지우기</button></div>`).join('') + '<p class="sp" style="margin:2px 0 0">동그라미를 누르면 프로필 사진을 넣을 수 있어요.</p>';
   }
   function saveMember(m) {
     members.set(m.id, m);
@@ -1446,7 +1583,19 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     $('#mgrName').value = ''; renderMgr(); render(); toast(`${name} 님을 추가했어요`);
   });
   let mgrTimer = null;
+  $('#mgrRows').addEventListener('change', async e => {
+    const inp = e.target.closest('input[data-photo]'); if (!inp || !inp.files[0]) return;
+    const m = members.get(inp.dataset.photo); if (!m) return;
+    try { m.photo = await shrinkImage(inp.files[0], 200, 0.85, true); await saveMember(m); renderMgr(); render(); toast(`${m.name} 님 프로필 사진을 바꿨어요`); }
+    catch { toast('사진을 넣지 못했어요. 다른 사진으로 해 보세요'); }
+  });
+  $('#mgrRows').addEventListener('click', e => {
+    const b = e.target.closest('[data-prm]'); if (!b) return;
+    const m = members.get(b.dataset.prm); if (!m) return;
+    delete m.photo; saveMember(m).catch(() => {}); renderMgr(); render(); toast('프로필 사진을 뺐어요');
+  });
   $('#mgrRows').addEventListener('input', e => {
+    if (!e.target.id || !e.target.id.startsWith('mn-')) return;
     const row = e.target.closest('.mrow'); if (!row) return;
     const m = members.get(row.dataset.id); if (!m) return;
     m.name = e.target.value; clearTimeout(mgrTimer);
@@ -1576,7 +1725,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       : other && (state.kind === 's' || state.kind === 'c') ? `<div class="lockbar">${lockSvg}<span><b>${esc(nameOf(state.member))}</b>의 생기부예요. 내용은 ${esc(nameOf(state.member))}만 고칠 수 있고, 나는 카드 아래 <b>조원 질문·분석 표의 내 줄</b>에 예상 질문과 분석을 남길 수 있어요.</span></div>`
       : other ? `<div class="lockbar">${lockSvg}<span><b>${esc(nameOf(state.member))}</b>의 노트예요. 답변은 ${esc(nameOf(state.member))}만 고칠 수 있고, 나는 <b>피드백·꼬리질문 표의 내 줄</b>과 <b>약점 질문 적어 주기</b>를 쓸 수 있어요.</span></div>` : '';
     const canAdd = members.has(self) && (state.kind === 'w' || !other);
-    listEl.innerHTML = banner + (v.length ? v.map(cardHTML).join('') : `<p class="empty">${state.q ? '검색 결과가 없어요.' : '아직 카드가 없어요.'}</p>`)
+    listEl.innerHTML = (state.sbOpen ? sbPanelHTML() : '') + banner + (v.length ? v.map(cardHTML).join('') : `<p class="empty">${state.q ? '검색 결과가 없어요.' : '아직 카드가 없어요.'}</p>`)
       + (members.size && canAdd ? `<button class="add" type="button" id="add">${addLabel}</button>` : '');
     listEl.querySelectorAll('.cell textarea').forEach(grow);
     counts(); renderDday();
