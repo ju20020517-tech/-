@@ -912,87 +912,105 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   // ---------- print ----------
   function printDoc(o, auto) {
     const groups = [['q', '공통 질문'], ['r', '생기부 질문'], ['w', '약점 질문']].filter(([k]) => o.kinds.includes(k));
-    const body = (v) => o.color ? clean(v) : esc(toText(v)).replace(/\n/g, '<br>');
-    const items = k => [...cards.values()].filter(c => c.kind === k && !c.trashed && !c.draft && whoOk(c) && (isQA(k) || !o.grade || String(c.grade) === o.grade)).sort((a, b) => sortKey(a) - sortKey(b));
-    const fqP = c => { if (!o.fq) return '';
-      if (c.kind === 'r') { const tr = memberList().filter(m => m.id !== c.owner).map(m => [m, (fbs.get(c.id + '__' + m.id) || {}).tail]).filter(([, t]) => (t || '').trim());
-        return tr.length ? `<div class="fqp"><div class="lab">조원 꼬리질문</div><table class="fbp"><tr><th>조원</th><th>꼬리질문</th><th>답변</th></tr>${tr.map(([m, t]) => `<tr><td><b>${esc(m.name)}</b></td><td>${esc(t)}</td><td>${esc((c.tailAns || {})[m.id] || '')}</td></tr>`).join('')}</table></div>` : ''; }
-      const rows = [];
-      memberList().filter(m => m.id !== c.owner).forEach(m => { const f = fbs.get(c.id + '__' + m.id) || {}; FBK.forEach(([k, l]) => { if ((f[k] || '').trim()) rows.push([m, k, l, f[k]]); }); });
-      return rows.length ? `<div class="fqp"><div class="lab">조원 피드백</div><table class="fbp"><tr><th>조원</th><th style="width:18mm">종류</th><th>내용</th></tr>${rows.map(([m, k, l, t]) => `<tr><td><b>${esc(m.name)}</b></td><td><span class="pt ${k}">${l}</span></td><td>${esc(t)}</td></tr>`).join('')}</table></div>` : ''; };
-    const ownerP = () => '';
-    const set = cards.get(setIdOf());
-    const now = new Date(), stamp = `${now.getFullYear()}.${now.getMonth() + 1}.${now.getDate()}`;
+    const body = v => o.color ? clean(v) : esc(toText(v)).replace(/\n/g, '<br>');
+    const items = k => [...cards.values()].filter(c => c.kind === k && !c.trashed && !c.draft && whoOk(c) && (c.question || '').trim()).sort((a, b) => sortKey(a) - sortKey(b));
+    const others = c => memberList().filter(m => m.id !== c.owner);
+    // 조원 피드백: 조원 칸은 한 번만 (rowspan), 종류는 색 배지
+    const fbTable = c => {
+      const per = others(c).map(m => { const f = fbs.get(c.id + '__' + m.id) || {}; return [m, FBK.filter(([k]) => (f[k] || '').trim()).map(([k, l]) => [k, l, f[k].trim()])]; }).filter(([, r]) => r.length);
+      if (!per.length) return '';
+      return `<table class="fb"><colgroup><col style="width:17mm"><col style="width:17mm"><col></colgroup>
+        <thead><tr><th colspan="3">조원 피드백</th></tr></thead><tbody>${per.map(([m, rows]) => rows.map(([k, l, t], i) => `<tr${i ? '' : ' class="first"'}>${i ? '' : `<td class="who" rowspan="${rows.length}">${esc(m.name)}</td>`}<td><span class="pt ${k}">${l}</span></td><td class="tx">${esc(t)}</td></tr>`).join('')).join('')}</tbody></table>`;
+    };
+    const tailTable = c => {
+      const rows = others(c).map(m => [m, ((fbs.get(c.id + '__' + m.id) || {}).tail || '').trim()]).filter(([, t]) => t);
+      if (!rows.length) return '';
+      return `<table class="fb"><colgroup><col style="width:17mm"><col><col></colgroup>
+        <thead><tr><th colspan="3">조원 꼬리질문</th></tr><tr class="sub"><th>조원</th><th>꼬리질문</th><th>${esc(nameOf(c.owner))}의 답변</th></tr></thead><tbody>${rows.map(([m, t]) => `<tr class="first"><td class="who">${esc(m.name)}</td><td class="tx">${esc(t)}</td><td class="tx">${esc((c.tailAns || {})[m.id] || '') || '<span class="none">–</span>'}</td></tr>`).join('')}</tbody></table>`;
+    };
+    const now = new Date(), stamp = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}.`;
     const dds = ddView().filter(x => !x.past);
-    const whoTitle = `${esc(nameOf(state.member))}의 면접 답변`;
-    const secs = groups.map(([k, name]) => {
+    let total = 0;
+    const secs = groups.map(([k, name], gi) => {
       const list = items(k); if (!list.length) return '';
-      const cardsHTML = list.map(c => {
-        if (isQA(k)) {
-          const sp = speak(c);
-          return `<section class="qa"><div class="q"><span>Q.</span>${esc(c.question)}${c.askedBy && c.askedBy !== c.owner ? ` <small style="font-family:sans-serif;font-size:8pt;color:#A1482A">${esc(josa(nameOf(c.askedBy), '이', '가'))} 적어 준 질문</small>` : ''}</div>${c.kind === 'r' && (c.subject || c.page) ? `<div class="rel">관련: ${esc(c.subject || '')}${c.page ? ` · 생기부 ${esc(c.page)}쪽` : ''}</div>` : c.related ? `<div class="rel">관련: ${esc(c.related)}</div>` : ''}<div class="a">${body(c.content) || '<span class="none">답변 없음</span>'}</div>${sp.n ? `<div class="t">말하면 약 ${sp.t} · ${sp.n}자</div>` : ''}${fqP(c) ? `<div class="t">${fqP(c)}</div>` : ''}</section>`;
-        }
-        const an = o.an && (toText(c.summary).trim() || (c.keywords || '').trim());
-        return `<table class="rec"><colgroup><col style="width:13mm"><col style="width:30mm"><col></colgroup>
-          <tr><th>학년</th><th>${k === 's' ? '과목' : '영역'}</th><th>${k === 's' ? '세특 내용' : '활동 내용'}</th></tr>
-          <tr><td class="c">${esc(c.grade)}</td><td class="c b">${esc(c.subject)}${ownerP(c) ? '<br>' + ownerP(c) : ''}</td><td>${body(c.content)}</td></tr>
-          ${an ? `<tr class="an"><td colspan="3"><div class="lab">분석</div>${body(c.summary)}${c.keywords ? `<div class="kw">키워드 · ${esc(c.keywords)}</div>` : ''}</td></tr>` : ''}
-          ${fqP(c) ? `<tr class="an"><td colspan="3">${fqP(c)}</td></tr>` : ''}</table>`;
+      total += list.length;
+      const qs = list.map((c, i) => {
+        const sp = speak(c), ans = toText(c.content).trim();
+        const meta = [
+          c.kind === 'r' && (c.subject || c.page) ? `<span class="tag">${esc(c.subject || '')}${c.subject && c.page ? ' · ' : ''}${c.page ? `생기부 ${esc(c.page)}쪽` : ''}</span>` : '',
+          c.kind === 'w' && c.related ? `<span class="tag">관련 · ${esc(c.related)}</span>` : '',
+          c.kind !== 'w' && c.weak ? '<span class="tag weak">약점</span>' : '',
+          c.askedBy && c.askedBy !== c.owner ? `<span class="tag by">${esc(josa(nameOf(c.askedBy), '이', '가'))} 적어 준 질문</span>` : '',
+        ].join('');
+        const fb = o.fq ? (c.kind === 'r' ? tailTable(c) : fbTable(c)) : '';
+        return `<article class="qa">
+          <div class="head"><div class="qno">Q${i + 1}</div><div class="qt"><h3>${esc(c.question)}</h3>${meta ? `<div class="meta">${meta}</div>` : ''}</div>${ans ? `<div class="time">${sp.t}<small>${sp.n}자</small></div>` : ''}</div>
+          <div class="ans${ans ? '' : ' none'}">${ans ? body(c.content) : '아직 답변이 없어요.'}</div>
+          ${fb}</article>`;
       }).join('');
-      return { k, html: `<h2>${name} <small>${list.length}</small></h2>${cardsHTML}` };
-    }).filter(Boolean);
-    const part = (title, ks) => { const h = secs.filter(x => ks.includes(x.k)).map(x => x.html).join(''); return h ? `<div class="part">${title}</div>${h}` : ''; };
-    const secsHTML = part('생기부 분석', ['s', 'c']) + part('면접 질문 대비', ['q', 'r', 'w']);
+      return `<section class="grp"><h2><span class="no">${String(gi + 1).padStart(2, '0')}</span>${name}<small>${list.length}개</small></h2>${qs}</section>`;
+    }).filter(Boolean).join('');
     const S = '<' + 'script>', SE = '<' + '/script>';
-    return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>면접 스터디 노트</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+    return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(nameOf(state.member))} 면접 답변 노트</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
 <style>
-@page{size:A4;margin:14mm 13mm 16mm}
+@page{size:A4;margin:15mm 15mm 16mm}
+@page{@bottom-center{content:counter(page) " / " counter(pages);font:8pt "IBM Plex Sans KR",sans-serif;color:#9A8A93}}
 *{box-sizing:border-box}
 html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-body{margin:0;font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#18212C;font-size:10pt;line-height:1.65;background:#fff}
-.page{max-width:184mm;margin:0 auto;padding:0 0 10mm}
-.top{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #18212C;padding-bottom:3mm;margin-bottom:6mm}
-h1{font-family:"Gowun Batang",serif;font-size:20pt;margin:0;line-height:1.2}
-.top .m{font-size:9pt;color:#5B6878;text-align:right}
-.top .m b{font-family:"Gowun Batang",serif;color:#C23A74;font-size:13pt}
-h2{font-family:"Gowun Batang",serif;font-size:13pt;margin:8mm 0 3mm;padding-left:3mm;border-left:3px solid #C23A74;break-after:avoid}
-.part{font-size:9pt;font-weight:600;letter-spacing:.12em;color:#fff;background:#18212C;display:inline-block;padding:1mm 3mm;border-radius:1mm;margin:9mm 0 0;break-after:avoid}
-.part:first-of-type{margin-top:2mm}
-.part+h2{margin-top:3mm}
-h2 small{font-family:"IBM Plex Sans KR",sans-serif;font-size:9pt;color:#8D99A7;font-weight:400}
-table.rec{width:100%;border-collapse:collapse;margin:0 0 4mm;border:1.2px solid #26313D;table-layout:fixed}
-.rec th{background:#FCEAF2;font-size:8.5pt;font-weight:600;color:#5B6878;text-align:left;padding:1.6mm 2.5mm;border-bottom:1px solid #EBCBD9;border-left:1px solid #EBCBD9}
-.rec th:first-child{border-left:0}
-.rec td{vertical-align:top;padding:2.5mm;border-left:1px solid #EBCBD9;word-break:keep-all;overflow-wrap:anywhere}
-.rec td:first-child{border-left:0}
-.rec td.c{text-align:center;vertical-align:middle}
-.rec td.b{font-weight:600}
-.rec tr.an td{border-top:1px dashed #EBCBD9;background:#FFF5F9}
-.rec tr{break-inside:avoid}
-.lab{font-size:8pt;font-weight:600;color:#C23A74;letter-spacing:.04em;margin-bottom:1mm}
-.kw{margin-top:1.5mm;font-size:8.5pt;color:#5B6878}
-.qa{border:1.2px solid #26313D;margin:0 0 4mm;break-inside:avoid}
-.qa .q{font-family:"Gowun Batang",serif;font-size:11.5pt;padding:2.5mm 3mm;border-bottom:1px solid #EBCBD9;display:flex;gap:2mm}
-.qa .q span{color:#C23A74}
-.qa .rel{font-size:8.5pt;color:#5B6878;padding:1.2mm 3mm;border-bottom:1px solid #EBCBD9}
-.qa .a{padding:2.5mm 3mm}
-.qa .t{font-size:8.5pt;color:#5B6878;padding:1.2mm 3mm;background:#FFF5F9;border-top:1px dashed #EBCBD9}
-.none{color:#8D99A7}
-.fqp div{font-size:9pt;margin-top:.8mm}.fbp{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.8pt;margin-top:1mm}.fbp th{background:#FCEAF2;color:#7A6170;font-size:8pt;text-align:left;padding:1mm 1.5mm;border:1px solid #EBCBD9}.fbp th:first-child{width:16mm}.fbp td{vertical-align:top;padding:1.2mm 1.5mm;border:1px solid #EBCBD9;white-space:pre-wrap;overflow-wrap:anywhere}.pt{font-size:7.5pt;padding:0 1.5mm;border-radius:2mm;margin-right:1mm}.pt.good{background:#E3F4E8;color:#2D7446}.pt.fix{background:#FFE8DC;color:#A1482A}.pt.ask{background:#FCE3EE;color:#C23A74}.fqp span,.own{font-size:8pt;color:#8D7080}
-.own{font-weight:400}
+body{margin:0;font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#231A20;font-size:9.8pt;line-height:1.7;background:#fff;word-break:keep-all;overflow-wrap:anywhere}
+.page{max-width:180mm;margin:0 auto}
+.cover{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;padding-bottom:4mm;border-bottom:.6mm solid #231A20;margin-bottom:2mm}
+.cover .k{font-size:8pt;font-weight:600;letter-spacing:.18em;color:#C23A74;margin:0 0 1mm}
+h1{font-family:"Gowun Batang",serif;font-size:21pt;line-height:1.25;margin:0}
+.cover .m{text-align:right;font-size:8.5pt;color:#7A6A73;line-height:1.6}
+.dd{display:inline-flex;align-items:baseline;gap:1.5mm;margin-left:3mm}
+.dd b{font-family:"Gowun Batang",serif;font-size:12pt;color:#C23A74}
+.sum{font-size:8.5pt;color:#7A6A73;margin:0 0 7mm}
+.grp+.grp{margin-top:9mm}
+h2{display:flex;align-items:baseline;gap:2.5mm;font-family:"Gowun Batang",serif;font-size:14pt;margin:0 0 3.5mm;padding-bottom:1.5mm;border-bottom:.3mm solid #E9D3DE;break-after:avoid}
+h2 .no{font-family:"IBM Plex Sans KR",sans-serif;font-size:9pt;font-weight:600;color:#C23A74;letter-spacing:.06em}
+h2 small{margin-left:auto;font-family:"IBM Plex Sans KR",sans-serif;font-size:8.5pt;font-weight:400;color:#9A8A93}
+.qa{margin:0 0 6mm;padding:0 0 5mm;border-bottom:.2mm dashed #E9D3DE}
+.qa:last-child{border-bottom:0}
+.head{display:flex;align-items:flex-start;gap:3mm;break-after:avoid}
+.qno{flex:none;min-width:8.5mm;height:6mm;padding:0 1.5mm;border-radius:3mm;background:#C23A74;color:#fff;font-size:8.5pt;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:.6mm}
+.qt{flex:1;min-width:0}
+h3{font-family:"Gowun Batang",serif;font-size:11.8pt;font-weight:700;line-height:1.5;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:1.5mm;margin-top:1.2mm}
+.tag{font-size:7.6pt;line-height:1.5;padding:.3mm 2mm;border-radius:2mm;background:#F6EEF2;color:#6E5A66}
+.tag.weak{background:#FBE3DF;color:#A33A2C;font-weight:600}
+.tag.by{background:#FFF0E6;color:#A1482A}
+.time{flex:none;text-align:right;font-size:9pt;font-weight:600;color:#C23A74;line-height:1.3;margin-top:.6mm}
+.time small{display:block;font-size:7.5pt;font-weight:400;color:#9A8A93}
+.ans{margin:3mm 0 0 11.5mm;padding:2.5mm 4mm;background:#FFF8FB;border-left:.8mm solid #F0C6D8;border-radius:0 1.5mm 1.5mm 0;font-size:10pt;line-height:1.8;break-inside:avoid}
+.ans.none{color:#A898A1;font-size:9pt;background:#FAFAFA;border-left-color:#E4E4E4}
+table.fb{width:calc(100% - 11.5mm);margin:3mm 0 0 11.5mm;border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:8.6pt;line-height:1.55;border:.25mm solid #E9D3DE;border-radius:1.5mm;overflow:hidden}
+.fb thead th{text-align:left;font-size:7.8pt;font-weight:600;color:#8A6E7D;background:#FBF3F7;padding:1.3mm 2.5mm;letter-spacing:.04em}
+.fb thead tr.sub th{font-weight:500;color:#9A8A93;background:#fff;border-top:.25mm solid #F1E2E9}
+.fb td{vertical-align:top;padding:1.4mm 2.5mm;border-top:.25mm solid #F1E2E9}
+.fb tr:not(.first) td{border-top-style:dotted}
+.fb td.who{font-weight:600;color:#3A2A33;border-right:.25mm solid #F1E2E9}
+.fb td.tx{white-space:pre-wrap}
+.fb tr{break-inside:avoid}
+.pt{display:inline-block;font-size:7.4pt;font-weight:600;line-height:1.5;padding:0 1.6mm;border-radius:2mm;white-space:nowrap}
+.pt.good{background:#E3F4E8;color:#2D7446}.pt.fix{background:#FFE8DC;color:#A1482A}.pt.ask{background:#FCE3EE;color:#B32E68}
+.none{color:#A898A1}
 [data-fc=red]{color:#C62828}[data-fc=blue]{color:#1565C0}[data-fc=green]{color:#2E7D32}[data-fc=purple]{color:#7B1FA2}[data-fc=orange]{color:#D9480F}
-[data-hl]{color:#18212C;border-radius:1px;padding:0 .5px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+[data-hl]{color:#231A20;border-radius:.5mm;padding:0 .4mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}
 [data-hl=yellow]{background:#FFEF8A}[data-hl=green]{background:#C6F0C2}[data-hl=pink]{background:#FFCFE1}[data-hl=blue]{background:#CBE5FF}
-.hint{position:sticky;top:0;background:#C23A74;color:#fff;padding:10px 16px;font-size:14px;display:flex;justify-content:center;gap:12px;align-items:center}
-.hint button{font:inherit;font-weight:600;background:#fff;color:#C23A74;border:0;border-radius:6px;padding:5px 14px;cursor:pointer}
-.empty{color:#8D99A7;text-align:center;padding:20mm 0}
+.empty{color:#A898A1;text-align:center;padding:30mm 0}
+.hint{position:sticky;top:0;z-index:2;background:#231A20;color:#fff;padding:10px 16px;font-size:14px;display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap}
+.hint button{font:inherit;font-weight:600;background:#C23A74;color:#fff;border:0;border-radius:8px;padding:6px 16px;cursor:pointer}
 @media print{.hint{display:none}}
-@media screen{body{background:#F6E7EE}.page{background:#fff;padding:14mm 13mm;margin:16px auto;box-shadow:0 2px 12px rgba(0,0,0,.12);max-width:210mm}}
+@media screen{body{background:#EFE6EA}.page{background:#fff;padding:15mm;margin:16px auto;box-shadow:0 2px 14px rgba(0,0,0,.12);max-width:210mm}}
 </style></head><body>
 ${auto ? `<div class="hint">인쇄 창에서 'PDF로 저장'을 고르면 PDF 파일로도 만들 수 있어요. <button onclick="print()">인쇄하기</button></div>` : ''}
-<div class="page"><div class="top"><h1>${whoTitle}</h1><div class="m">${dds.length ? dds.map(x => `${esc(x.name)} <b>${x.label}</b>`).join(' · ') + '<br>' : ''}${stamp} 인쇄${o.grade ? ` · ${o.grade}학년` : ''}</div></div>
-${secsHTML || '<p class="empty">인쇄할 카드가 없어요.</p>'}</div>
+<div class="page">
+<header class="cover"><div><p class="k">INTERVIEW NOTE</p><h1>${esc(nameOf(state.member))}의 면접 답변</h1></div>
+<div class="m">${dds.length ? `<div>${dds.map(x => `<span class="dd">${esc(x.name)} <b>${x.label}</b></span>`).join('')}</div>` : ''}<div>${stamp} 인쇄</div></div></header>
+<p class="sum">${groups.map(([k, n]) => `${n} ${items(k).length}개`).join(' · ')}${o.fq ? ' · 조원 피드백 포함' : ''}</p>
+${secs || '<p class="empty">인쇄할 질문이 없어요.</p>'}</div>
 ${auto ? `${S}window.addEventListener('load',()=>setTimeout(()=>print(),400));${SE}` : ''}
 </body></html>`;
   }
