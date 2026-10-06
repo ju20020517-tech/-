@@ -541,7 +541,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
         <button class="dday" id="ddBtn" type="button" aria-expanded="false" aria-controls="ddPanel" title="면접 일정 편집"></button>
         <div class="ddpanel" id="ddPanel" hidden role="dialog" aria-label="면접 일정">
           <h3>면접 일정</h3>
-          <p>대학마다 이름과 날짜를 넣어요. 위쪽 D-day는 가까운 날짜부터 보여요.</p>
+          <p>대학마다 이름과 날짜를 넣어요. 내 화면에만 보이고, 조원들에게는 보이지 않아요.</p>
           <div id="ddRows"></div>
           <button class="btn" id="ddAdd" type="button">+ 대학 추가</button>
         </div>
@@ -598,7 +598,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       <li>답변 아래 <b>조원 피드백</b>에서 <b>잘한 점 / 고칠 점 / 꼬리질문</b> 중 하나를 고르고 적어 <b>남기기</b>를 눌러요. 표에는 피드백을 남긴 조원만 보이고, 내가 남긴 피드백은 표에서 바로 고치거나 ×로 지울 수 있어요.</li>
       <li>중요한 부분을 <b>드래그</b>하면 글자색, <mark>형광펜</mark>, 굵게, 밑줄을 바꿀 수 있어요.</li>
       <li>카드 왼쪽 위 <b>⠿</b>를 잡고 끌면 순서를 바꿔요. <b>삭제</b>하면 <b>휴지통</b>으로 가고, 실수하면 <b>되돌리기</b>(입력칸 밖에서 Ctrl+Z)를 눌러요.</li>
-      <li>오른쪽 위 <b>면접 일정</b>은 지금 보고 있는 조원의 D-day예요. <b>인쇄</b>하면 그 조원의 답변과 피드백이 A4 파일로 만들어져요.</li>
+      <li>오른쪽 위 <b>면접 일정</b>은 내 D-day예요. 다른 조원에게는 보이지 않아요. <b>인쇄</b>하면 그 조원의 답변과 피드백이 A4 파일로 만들어져요.</li>
     </ol>
   </details>
 
@@ -667,7 +667,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   const LSSELF = 'study-self';
   let self = ''; try { self = localStorage.getItem(LSSELF) || ''; } catch {}
   const memberList = () => [...members.values()].sort((a, b) => (a.order ?? 0) - (b.order ?? 0) || String(a.name).localeCompare(String(b.name), 'ko'));
-  const setIdOf = () => 'set-' + (state.member || 'none');
+  const setIdOf = () => 'set-' + (self || 'none');   // 면접 일정은 언제나 '나'의 것만 보여요
   const canAns = c => !!self && self === c.owner;
   const canQ = c => !!self && (self === c.owner || (c.kind === 'w' && c.askedBy === self));
   const josa = (w, a, b) => { const ch = String(w).charCodeAt(String(w).length - 1); return w + (ch >= 0xAC00 && ch <= 0xD7A3 && (ch - 0xAC00) % 28 ? a : b); };
@@ -793,15 +793,43 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   const FBK = [['good', '잘한 점'], ['fix', '고칠 점'], ['ask', '꼬리질문']];
   const FBK_SB = [['ask', '예상 질문'], ['ana', '분석']];   // 친구 생기부에 다는 질문·분석
   const fbKeys = c => isQA(c.kind) ? FBK : FBK_SB;
-  const LSSEEN = 'study-seen';
+  // 새 피드백(NEW): 각 피드백의 어느 버전(updated 값)을 봤는지 기억해요.
+  // 기기 시계를 비교하지 않아서 친구 시계가 빨라도 안 남고, 저장소에 둬서 내 모든 기기에서 같이 써요.
+  const LSSEEN = 'study-seen2';
   let seen = {}; try { seen = JSON.parse(localStorage.getItem(LSSEEN) || '{}'); } catch {}
   let seenBase = {};                      // 노트를 연 순간의 기록: 이번 방문 동안 NEW 표시 기준
-  const isNewFb = (f, base) => f && fbHas(f) && f.author !== self && (f.updated || 0) > ((base || seen)[f.cardId] || 0);
-  function markSeen(memberId) {
-    seenBase = { ...seen };
-    const now = Date.now();
-    for (const c of cards.values()) if (c.owner === memberId) seen[c.id] = now;
+  const isNewFb = (f, base) => !!f && fbHas(f) && f.author !== self && !((base || seen)[f.id || (f.cardId + '__' + f.author)] >= (f.updated || 0));
+  let seenTimer = null;
+  function saveSeen() {
     try { localStorage.setItem(LSSEEN, JSON.stringify(seen)); } catch {}
+    if (local || !col || !members.has(self)) return;
+    clearTimeout(seenTimer);
+    seenTimer = setTimeout(() => { const doc = { kind: 'seen', owner: self, map: seen }; cards.set('seen-' + self, { id: 'seen-' + self, ...doc }); col.doc('seen-' + self).set(doc).catch(() => {}); }, 1200);
+  }
+  function mergeSeen() {                  // 다른 기기에서 본 기록 합치기
+    const d = cards.get('seen-' + self); if (!d || !d.map) return false;
+    let changed = false;
+    // 같은 피드백의 버전 값은 쓴 사람 기기에서만 커지니까, 큰 쪽이 더 최근에 본 기록이에요
+    for (const [k, v] of Object.entries(d.map)) if (typeof v === 'number' && !(seen[k] >= v)) { seen[k] = v; changed = true; }
+    if (changed) try { localStorage.setItem(LSSEEN, JSON.stringify(seen)); } catch {}
+    return changed;
+  }
+  function seeCards(ids) {                // 이 카드들에 달린 피드백을 지금 버전으로 '봤음' 처리
+    let changed = false;
+    for (const f of fbs.values()) if (ids.has(f.cardId) && f.author !== self && typeof f.updated === 'number' && !(seen[f.id] >= f.updated)) { seen[f.id] = f.updated; changed = true; }
+    if (changed) saveSeen();
+    return changed;
+  }
+  function markSeen(memberId) {
+    mergeSeen(); seenBase = { ...seen };
+    seeCards(new Set([...cards.values()].filter(c => c.owner === memberId).map(c => c.id)));
+  }
+  // 내 카드를 고쳐 저장하면 그 카드의 NEW는 바로 없애요
+  function seeOnSave(c) {
+    if (!c || self !== c.owner) return;
+    const keys = [...fbs.values()].filter(f => f.cardId === c.id && isNewFb(f, seenBase)).map(f => f.id);
+    seeCards(new Set([c.id]));
+    if (keys.length) { keys.forEach(k => { seenBase[k] = seen[k]; }); refreshFB(c.id); }
   }
   const savedAt = c => c.updated || c.created || 0;
   function fbSinceSave(memberId) {
@@ -926,7 +954,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     grow(t);
     const c = cards.get(t.closest('.card').dataset.id); if (!c || self !== c.owner) return;
     noteEdit(c, 'tailAns');
-    c.tailAns = { ...(c.tailAns || {}), [t.dataset.tans]: t.value }; c.updated = Date.now();
+    c.tailAns = { ...(c.tailAns || {}), [t.dataset.tans]: t.value }; c.updated = Date.now(); seeOnSave(c);
     queueSave(c);
   });
   listEl.addEventListener('click', e => {
@@ -953,7 +981,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       if (ch.type === 'removed') { const f = fbs.get(id); if (f) touched.add(f.cardId); fbs.delete(id); return; }
       const d = ch.doc.data(); fbs.set(id, { id, ...d }); touched.add(d.cardId);
     });
-    if (state.view === 'home') renderHome(); else { touched.forEach(refreshFB); counts(); if (state.view === 'cards') { const now = Date.now(); touched.forEach(id => { if (cards.get(id)?.owner === state.member) seen[id] = now; }); try { localStorage.setItem(LSSEEN, JSON.stringify(seen)); } catch {} } }
+    if (state.view === 'home') renderHome(); else { touched.forEach(refreshFB); counts(); if (state.view === 'cards') seeCards(new Set([...touched].filter(id => cards.get(id)?.owner === state.member))); }
   }
 
   // ---------- 꼬리질문 ----------
@@ -1070,7 +1098,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
         <thead><tr><th colspan="3">조원 꼬리질문</th></tr><tr class="sub"><th>조원</th><th>꼬리질문</th><th>${esc(nameOf(c.owner))}의 답변</th></tr></thead><tbody>${rows.map(([m, t]) => `<tr class="first"><td class="who">${esc(m.name)}</td><td class="tx">${esc(t)}</td><td class="tx">${esc((c.tailAns || {})[m.id] || '') || '<span class="none">–</span>'}</td></tr>`).join('')}</tbody></table>`;
     };
     const now = new Date(), stamp = `${now.getFullYear()}. ${now.getMonth() + 1}. ${now.getDate()}.`;
-    const dds = ddView().filter(x => !x.past);
+    const dds = state.member === self ? ddView().filter(x => !x.past) : [];   // 친구 노트 인쇄에는 내 일정을 넣지 않아요
     let total = 0;
     const secs = groups.map(([k, name], gi) => {
       const list = items(k); if (!list.length) return '';
@@ -1297,7 +1325,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     normalize(ed);
     if (off) restoreSel(ed, off);
     const c = cards.get(ed.closest('.card').dataset.id);
-    if (c) { pushUndo('꾸미기', [c]); c[ed.dataset.f] = ed.innerHTML; if (self === c.owner) c.updated = Date.now(); queueSave(c); }
+    if (c) { pushUndo('꾸미기', [c]); c[ed.dataset.f] = ed.innerHTML; if (self === c.owner) { c.updated = Date.now(); seeOnSave(c); } queueSave(c); }
   });
   listEl.addEventListener('paste', e => {
     const ed = e.target.closest && e.target.closest('.rt'); if (!ed) return;
@@ -1354,7 +1382,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     const card = m => {
       const a = answered(m.id), ids = new Set([...cards.values()].filter(c => c.owner === m.id && !c.trashed).map(c => c.id));
       const nfb = fbSinceSave(m.id);
-      const set = cards.get('set-' + m.id), now = new Date(), today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+      const set = m.id === self ? cards.get('set-' + m.id) : null, now = new Date(), today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
       const next = ((set && set.ddays) || []).filter(x => x.date).map(x => ({ n: x.name || '면접', d: Math.round((Date.parse(x.date) - today) / 864e5) })).filter(x => x.d >= 0).sort((p, q) => p.d - q.d)[0];
       return `<button class="mcard${m.id === self ? ' me' : ''}" type="button" data-open="${esc(m.id)}">
         <span class="top"><span class="av">${avHTML(m)}</span><span class="nm">${esc(m.name)}<small>${m.id === self ? '내 면접 노트' : '면접 노트 · 눌러서 피드백'}</small></span></span>
@@ -1851,6 +1879,8 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   }
   const ddPanel = $('#ddPanel'), ddBtn = $('#ddBtn'), ddRows = $('#ddRows');
   function renderDday() {
+    const mine = members.has(self);
+    ddBtn.closest('.ddwrap').hidden = !mine; if (!mine) { ddPanel.hidden = true; return; }
     const v = ddView();
     ddBtn.innerHTML = v.length
       ? v.map(x => `<span class="dc${x.past ? ' past' : ''}"><span class="u">${esc(x.name)}</span><b${x.diff === 0 ? ' class="today"' : ''}>${x.label}</b></span>`).join('') + '<span class="ed">편집</span>'
@@ -1868,7 +1898,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     const had = cards.get(setIdOf()), now = Date.now();
     if (fresh || now - ddSess > 1500) pushUndo(label, [had || { id: setIdOf(), before: null }]);
     ddSess = fresh ? 0 : now;
-    const set = had || { id: setIdOf(), owner: state.member, kind: 'set', created: 0 };
+    const set = had || { id: setIdOf(), owner: self, kind: 'set', created: 0 };
     const list = clone(ddList()); fn(list);
     set.ddays = list; delete set.dday;
     cards.set(set.id, set); queueSave(set); renderDday();
@@ -1907,7 +1937,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     noteEdit(c, f);
     if (el.classList.contains('rt')) { if (!el.textContent.trim() && !el.querySelector('br + br')) el.innerHTML = ''; c[f] = el.innerHTML; }
     else c[f] = el.value;
-    if (self && self === c.owner) c.updated = Date.now();
+    if (self && self === c.owner) { c.updated = Date.now(); seeOnSave(c); }
     if (f === 'grade') el.dataset.g = el.value;
     if (isQA(c.kind) && f === 'content') cardEl.querySelector('.ansfoot').innerHTML = speak(c).html;
     else if (!isQA(c.kind) && (f === 'content' || f === 'subject')) {
@@ -1973,6 +2003,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
       if (id === focusId || timers.has(id) && cards.get(id) && !cards.get(id).draft && chainsPending(id)) return;
       const had = cards.has(id);
       cards.set(id, { id, ...ch.doc.data(), draft: false });
+      if (id === 'seen-' + self && mergeSeen() && state.view === 'home') structural = true;
       structural = true;
       if (!had) structural = true;
     });
