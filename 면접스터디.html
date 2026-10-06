@@ -781,17 +781,37 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     c.draft = false;
     saveEl.textContent = '저장 중…';
     clearTimeout(timers.get(c.id));
-    timers.set(c.id, setTimeout(() => {
-      if (local) { lsSave(); saveEl.textContent = '이 브라우저에 저장됨'; return; }
-      const prev = chains.get(c.id) || Promise.resolve();
-      const next = prev.then(() => col.doc(c.id).set(body(c)))
-        .then(() => { saveEl.textContent = '저장됨'; })
-        .catch(e => { saveEl.textContent = e && e.code === 'quota_exceeded' ? '저장 공간이 가득 찼어요. 안 쓰는 카드를 지워 주세요.' : '저장하지 못했어요. 잠시 후 다시 입력해 보세요.'; });
-      chains.set(c.id, next);
-    }, 700));
+    pendingCards.set(c.id, c);
+    timers.set(c.id, setTimeout(() => writeCard(c), 700));
   }
+  // 실제 저장. 8초가 지나도 답이 없으면 연결 상태를 알려 줘요 (연결되면 저절로 마저 저장돼요)
+  const pendingCards = new Map();
+  let inflight = 0, slowTimer = null;
+  function track(pr) {
+    inflight++; clearTimeout(slowTimer);
+    slowTimer = setTimeout(() => { if (inflight) saveEl.textContent = '인터넷 연결이 느려 저장을 기다리는 중…'; }, 8000);
+    return pr.finally(() => { inflight = Math.max(0, inflight - 1); if (!inflight) clearTimeout(slowTimer); });
+  }
+  function writeCard(c) {
+    timers.delete(c.id); pendingCards.delete(c.id);
+    if (local) { lsSave(); saveEl.textContent = '이 브라우저에 저장됨'; return; }
+    const prev = chains.get(c.id) || Promise.resolve();
+    const next = track(prev.then(() => col.doc(c.id).set(body(c))))
+      .then(() => { if (!inflight) saveEl.textContent = '저장됨'; })
+      .catch(e => { saveEl.textContent = e && e.code === 'quota_exceeded' ? '저장 공간이 가득 찼어요. 안 쓰는 카드를 지워 주세요.' : '저장하지 못했어요. 잠시 후 다시 입력해 보세요.'; });
+    chains.set(c.id, next);
+  }
+  // 앱을 닫거나 다른 앱으로 넘어갈 때, 기다리던 저장을 바로 보내요
+  function flushSaves() {
+    for (const [id, c] of [...pendingCards]) { clearTimeout(timers.get(id)); writeCard(c); }
+    for (const [key, d] of [...fbQueue]) { clearTimeout(fbTimers.get(key)); fbTimers.delete(key); fbQueue.delete(key); persistFb(key, d); }
+    if (mgrPending) { clearTimeout(mgrTimer); const m = mgrPending; mgrPending = null; if (m.name.trim()) saveMember(m).catch(() => {}); }
+    if (seenTimer) { clearTimeout(seenTimer); seenTimer = null; writeSeen(); }
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSaves(); });
+  window.addEventListener('pagehide', flushSaves);
   function dropDoc(id) {
-    clearTimeout(timers.get(id)); timers.delete(id);
+    clearTimeout(timers.get(id)); timers.delete(id); pendingCards.delete(id);
     if (local) { lsSave(); return; }
     if (!col) return;
     const prev = chains.get(id) || Promise.resolve();
@@ -889,7 +909,11 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     try { localStorage.setItem(LSSEEN, JSON.stringify(seen)); } catch {}
     if (local || !col || !members.has(self)) return;
     clearTimeout(seenTimer);
-    seenTimer = setTimeout(() => { const doc = { kind: 'seen', owner: self, map: seen }; cards.set('seen-' + self, { id: 'seen-' + self, ...doc }); col.doc('seen-' + self).set(doc).catch(() => {}); }, 1200);
+    seenTimer = setTimeout(() => { seenTimer = null; writeSeen(); }, 1200);
+  }
+  function writeSeen() {
+    if (local || !col || !members.has(self)) return;
+    const doc = { kind: 'seen', owner: self, map: { ...seen } }; cards.set('seen-' + self, { id: 'seen-' + self, ...doc }); col.doc('seen-' + self).set(doc).catch(() => {});
   }
   function mergeSeen() {                  // 다른 기기에서 본 기록 합치기
     const d = cards.get('seen-' + self); if (!d || !d.map) return false;
@@ -994,7 +1018,7 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     d.open ? folded.delete(d.dataset.card) : folded.add(d.dataset.card);
     try { localStorage.setItem(LSFOLD, JSON.stringify([...folded])); } catch {}
   }, true);
-  const fbTimers = new Map(), LSFB = 'study-feedback';
+  const fbTimers = new Map(), fbQueue = new Map(), LSFB = 'study-feedback';
   listEl.addEventListener('input', e => {
     const t = e.target.closest && e.target.closest('.cell textarea[data-k]'); if (!t || !members.has(self)) return;
     grow(t);
@@ -1003,17 +1027,17 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
     fbs.set(key, { id: key, ...d });
     const w = t.closest('.fbw'), n = memberList().filter(m => m.id !== cards.get(cardId)?.owner && fbHas(fbs.get(cardId + '__' + m.id) || {})).length;
     w.querySelector('.fqh .n').textContent = n ? n + '명' : '';
-    saveEl.textContent = '저장 중…'; clearTimeout(fbTimers.get(key));
-    fbTimers.set(key, setTimeout(() => { fbTimers.delete(key); persistFb(key, d); }, 600));
+    saveEl.textContent = '저장 중…'; clearTimeout(fbTimers.get(key)); fbQueue.set(key, d);
+    fbTimers.set(key, setTimeout(() => { fbTimers.delete(key); fbQueue.delete(key); persistFb(key, d); }, 600));
   });
   function persistFb(key, d) {
     if (local) { try { localStorage.setItem(LSFB, JSON.stringify([...fbs.values()])); } catch {} saveEl.textContent = '이 브라우저에 저장됨'; counts(); return; }
-    fcol.doc(key).set(d).then(() => { saveEl.textContent = '저장됨'; counts(); }).catch(() => { saveEl.textContent = '피드백을 저장하지 못했어요. 쓰기 권한을 확인해 주세요.'; });
+    track(fcol.doc(key).set(d)).then(() => { if (!inflight) saveEl.textContent = '저장됨'; counts(); }).catch(() => { saveEl.textContent = '피드백을 저장하지 못했어요. 쓰기 권한을 확인해 주세요.'; });
   }
   function setMyFb(cardId, k, text) {
     const key = cardId + '__' + self;
     const d = { ...(fbs.get(key) || {}), cardId, author: self, [k]: text, updated: Date.now() }; delete d.id;
-    fbs.set(key, { id: key, ...d }); clearTimeout(fbTimers.get(key)); fbTimers.delete(key);
+    fbs.set(key, { id: key, ...d }); clearTimeout(fbTimers.get(key)); fbTimers.delete(key); fbQueue.delete(key);
     persistFb(key, d);
   }
   // 종류를 골라 피드백 남기기 (같은 종류가 이미 있으면 줄을 바꿔 이어 붙여요)
@@ -1803,13 +1827,13 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     saveMember({ id: 'm-' + newId(), name, order }).catch(() => toast('조원을 추가하지 못했어요'));
     $('#mgrName').value = ''; renderMgr(); render(); toast(`${name} 님을 추가했어요`);
   });
-  let mgrTimer = null;
+  let mgrTimer = null, mgrPending = null;
   $('#mgrRows').addEventListener('input', e => {
     if (!e.target.id || !e.target.id.startsWith('mn-')) return;
     const row = e.target.closest('.mrow'); if (!row) return;
     const m = members.get(row.dataset.id); if (!m) return;
-    m.name = e.target.value; clearTimeout(mgrTimer);
-    mgrTimer = setTimeout(() => { if (m.name.trim()) saveMember(m).catch(() => {}); renderPeople(); }, 500);
+    m.name = e.target.value; clearTimeout(mgrTimer); mgrPending = m;
+    mgrTimer = setTimeout(() => { mgrPending = null; if (m.name.trim()) saveMember(m).catch(() => {}); renderPeople(); }, 500);
   });
   $('#mgrRows').addEventListener('click', e => {
     const b = e.target.closest('.btn'); if (!b) return;
