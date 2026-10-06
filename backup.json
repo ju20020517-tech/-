@@ -1,0 +1,120 @@
+{
+ "exported": "2026-10-06",
+ "source": "claude-artifact",
+ "collections": {
+  "records": {
+   "rmuwa3pbh54grv": {
+    "content": "",
+    "created": 1791266966768,
+    "grade": "",
+    "keywords": "",
+    "kind": "q",
+    "order": 3,
+    "owner": "m-juyeon",
+    "question": "본인의 단점과 그것을 고치려고 한 노력은?",
+    "related": "",
+    "subject": "",
+    "summary": ""
+   },
+   "rmuwa3pbh5dtg6": {
+    "content": "",
+    "created": 1791266966767,
+    "grade": "",
+    "keywords": "",
+    "kind": "q",
+    "order": 2,
+    "owner": "m-juyeon",
+    "question": "본인의 장점은 무엇인가요?",
+    "related": "",
+    "subject": "",
+    "summary": ""
+   },
+   "rmuwa3pbh8psj0": {
+    "content": "",
+    "created": 1791266966766,
+    "grade": "",
+    "keywords": "",
+    "kind": "q",
+    "order": 1,
+    "owner": "m-juyeon",
+    "question": "입학 후 어떤 공부를 하고 싶나요?",
+    "related": "",
+    "subject": "",
+    "summary": ""
+   },
+   "rmuwa3pbhw2e5q": {
+    "content": "둧더ㅠㅍ처뉴당파ㅓㅇ ㅏㅓㄴㄹ. ㅓㅐ유러ㅐㅜㅠㄹ어ㅐㅝ이류ㅑㅜㄴ류ㅣㅓㅜ ㄹ니ㅓ ㅌ추ㅐㅑㄴㅍ룰ㄴ패ㅑㅜㅍㄹ니ㅑㄹ누ㅠㅑㅣㄴㄹ푼ㄹ피ㅓㅜㅠㄹ애ㅓㅠㅜㅇ래ㅑㅇ류ㅜㅑㄹ애ㅠㅜㅠㄹ야ㅔㅠㅜㄹ내ㅑㅠ루내ㅑ루ㅠㄹ이ㅑㅜㅠㄹ내ㅑ류ㅜㅐㅠㅑㄹ누ㅠㄴ래ㅑㅜㅠㅇ레ㅑㅠㄹ우ㅐㅑ유뤼ㅑㅠㅇ루유ㅣ랴ㅜㅠㄴ랴ㅣㅠ우리ㅏ유륑류ㅏㅜㅠ래ㅑ두ㅠㄹ대ㅑㅠㄹ두ㅑㅣㅠㄹ두ㅠㅑ대루ㅠㄷ갸",
+    "created": 1791266966765,
+    "grade": "",
+    "keywords": "",
+    "kind": "q",
+    "order": 0,
+    "owner": "m-juyeon",
+    "question": "우리 학과에 지원한 동기는 무엇인가요?",
+    "related": "",
+    "subject": "",
+    "summary": ""
+   },
+   "rmuwa3pbhwi9x4": {
+    "content": "",
+    "created": 1791266966769,
+    "grade": "",
+    "keywords": "",
+    "kind": "q",
+    "order": 4,
+    "owner": "m-juyeon",
+    "question": "마지막으로 하고 싶은 말이 있나요?",
+    "related": "",
+    "subject": "",
+    "summary": ""
+   }
+  },
+  "members": {
+   "m-heejung": {
+    "name": "희정",
+    "order": 1
+   },
+   "m-jinyu": {
+    "name": "진유",
+    "order": 4
+   },
+   "m-juyeon": {
+    "name": "주연",
+    "order": 2
+   },
+   "m-siyeon": {
+    "name": "시연",
+    "order": 3
+   },
+   "m-solha": {
+    "name": "솔하",
+    "order": 0
+   }
+  },
+  "feedback": {
+   "rmuwa69xy5jce5__m-juyeon": {
+    "author": "m-juyeon",
+    "cardId": "rmuwa69xy5jce5",
+    "good": "",
+    "updated": 1791267113323
+   }
+  },
+  "topics": {
+   "t-rmuwai5rk54800": {
+    "created": 1791267641264,
+    "createdBy": "m-juyeon",
+    "order": 1791267641264,
+    "text": "지원 동기"
+   }
+  },
+  "links": {
+   "t-rmuwai5rk54800__m-juyeon": {
+    "cardId": "rmuwa3pbhw2e5q",
+    "member": "m-juyeon",
+    "topicId": "t-rmuwai5rk54800",
+    "updated": 1791267645178
+   }
+  },
+  "questions": {}
+ }
+}

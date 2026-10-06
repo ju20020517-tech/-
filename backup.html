@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>스터디 데이터 백업</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="shared-db.js"></script>
+<style>
+:root{--ground:#FBF0F4;--paper:#fff;--ink:#2B1D24;--soft:#7A6170;--rule:#F0D5E0;--accent:#D2427E;--warn:#B8392F}
+@media (prefers-color-scheme:dark){:root{--ground:#1B1217;--paper:#261A21;--ink:#F6E9EF;--soft:#C9AEBB;--rule:#3E2A35;--accent:#F48DB8;--warn:#F08F80}}
+*{box-sizing:border-box}
+body{margin:0;padding:0 16px;background:var(--ground);color:var(--ink);font:15px/1.6 "Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:40px 0}
+h1{font-size:24px;margin:0 0 4px}
+p{color:var(--soft);margin:0 0 16px}
+section{background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:16px;margin:0 0 6px}
+button,label.btn{font:inherit;font-weight:600;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:8px;padding:7px 14px;cursor:pointer;display:inline-block}
+button.sec{background:transparent;color:var(--accent)}
+input[type=file]{display:none}
+#log{white-space:pre-wrap;font-size:13px;color:var(--soft);min-height:1.5em}
+.err{color:var(--warn)}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+  <h1>스터디 데이터 백업</h1>
+  <p>조원들 답변·피드백을 파일로 받아 두거나, 받아 둔 파일을 다시 넣어요. <a href="./">← 스터디 노트로</a></p>
+
+  <section>
+    <h2>지금 데이터 받기</h2>
+    <p>현재 스터디방의 모든 데이터를 JSON 파일로 저장해요. 가끔 받아 두면 안전해요.</p>
+    <button id="exp" type="button">백업 파일 받기</button>
+  </section>
+
+  <section>
+    <h2>백업 파일 넣기</h2>
+    <p>같은 ID의 카드는 파일 내용으로 덮어쓰고, 나머지는 그대로 둬요.</p>
+    <label class="btn" for="file">파일 골라서 넣기</label><input type="file" id="file" accept=".json,application/json">
+    <button class="sec" id="bundled" type="button">Claude 아티팩트에서 옮겨 온 데이터 넣기</button>
+  </section>
+
+  <div id="log"></div>
+</main>
+<script>
+(async () => {
+  const log = (t, bad) => { const el = document.getElementById('log'); el.textContent = t; el.className = bad ? 'err' : ''; };
+  const db = await window.openSharedDb().catch(() => null);
+  if (!db) { log('firebase-config.js 설정이 아직 없어요. README.md 를 보고 먼저 설정해 주세요.', true); document.querySelectorAll('button,label.btn').forEach(b => b.style.opacity = .4); return; }
+  const COLS = window.SHARED_COLLECTIONS;
+
+  document.getElementById('exp').onclick = async () => {
+    try {
+      log('받는 중…');
+      const out = {};
+      for (const c of COLS) { out[c] = {}; (await db.collection(c).get()).forEach(d => { out[c][d.id] = d.data(); }); }
+      const n = COLS.reduce((s, c) => s + Object.keys(out[c]).length, 0);
+      const blob = new Blob([JSON.stringify({ exported: new Date().toISOString(), collections: out }, null, 1)], { type: 'application/json' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+      const d = new Date(); a.download = `면접스터디_백업_${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}.json`;
+      document.body.append(a); a.click(); a.remove();
+      log(`${n}개 항목을 파일로 받았어요.`);
+    } catch (e) { log('받지 못했어요: ' + (e && e.message || e), true); }
+  };
+
+  async function importData(data) {
+    const cols = data && data.collections; if (!cols) throw new Error('백업 파일 형식이 아니에요');
+    let n = 0;
+    for (const c of COLS) {
+      const docs = Object.entries(cols[c] || {});
+      for (let i = 0; i < docs.length; i += 400) {
+        const b = firebase.firestore().batch();
+        docs.slice(i, i + 400).forEach(([id, v]) => { b.set(db.collection(c).doc(id), v); n++; });
+        await b.commit();
+      }
+    }
+    return n;
+  }
+  const run = async get => {
+    if (!confirm('백업 데이터를 지금 스터디방에 넣을까요? 같은 카드는 백업 내용으로 바뀌어요.')) return;
+    try { log('넣는 중…'); const n = await importData(await get()); log(`${n}개 항목을 넣었어요. 스터디 노트를 새로고침해 보세요.`); }
+    catch (e) { log('넣지 못했어요: ' + (e && e.message || e), true); }
+  };
+  document.getElementById('file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) run(async () => JSON.parse(await f.text())); };
+  document.getElementById('bundled').onclick = () => run(async () => (await fetch('backup.json', { cache: 'no-store' })).json());
+})();
+</script>
+</body>
+</html>

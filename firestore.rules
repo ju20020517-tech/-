@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 스터디방 안의 정해진 목록만 읽고 쓸 수 있어요. 방 목록 자체는 볼 수 없어요.
+    match /rooms/{room}/{coll}/{doc} {
+      allow read, delete: if coll in ['records', 'members', 'feedback', 'topics', 'links', 'questions'];
+      allow create, update: if coll in ['records', 'members', 'feedback', 'topics', 'links', 'questions']
+                            && request.resource.data.size() <= 40;
+    }
+  }
+}
