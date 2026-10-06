@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        "$coll": {
+          ".read": "$coll === 'records' || $coll === 'members' || $coll === 'feedback' || $coll === 'topics' || $coll === 'links' || $coll === 'questions'",
+          ".write": "$coll === 'records' || $coll === 'members' || $coll === 'feedback' || $coll === 'topics' || $coll === 'links' || $coll === 'questions'"
+        }
+      }
+    }
+  }
+}

@@ -19,7 +19,9 @@ Claude 아티팩트로 만든 **면접 스터디 노트**를 Claude 구독과 �
 | `index.html` | 스터디 노트 본체 (아티팩트와 같은 코드) |
 | `firebase-config.js` | **여기에 내 Firebase 설정을 붙여 넣어요** |
 | `shared-db.js` | 아티팩트의 공유 저장소를 Firebase로 이어 주는 부분 |
-| `firestore.rules` | Firebase 보안 규칙 (복사해서 붙여 넣기용) |
+| `database.rules.json` | Realtime Database 규칙 (복사해서 붙여 넣기용) |
+| `firestore.rules` | Firestore를 쓸 때의 규칙 |
+| `면접스터디.html` | 위 파일들을 하나로 합친 버전 (크롬으로 바로 열기) |
 | `backup.html` | 데이터를 파일로 받거나, 받은 파일을 다시 넣는 페이지 |
 | `backup.json` | 아티팩트에 있던 데이터 (2026-10-06에 옮겨 둔 것) |
 
@@ -34,10 +36,11 @@ Claude 아티팩트로 만든 **면접 스터디 노트**를 Claude 구독과 �
 2. **프로젝트 만들기** → 이름 아무거나(예: `interview-study`) → Google 애널리틱스는 꺼도 돼요.
 3. 무료 요금제(Spark)로 충분해요. 카드 등록 필요 없어요.
 
-### 1-2. 데이터베이스(Firestore) 켜기
-1. 왼쪽 메뉴 **빌드 → Firestore Database → 데이터베이스 만들기**.
-2. 위치는 `asia-northeast3 (서울)`, **프로덕션 모드**로 시작.
-3. 만들어지면 위쪽 **규칙** 탭을 눌러 내용을 전부 지우고, 이 저장소의 `firestore.rules` 내용을 붙여 넣은 뒤 **게시**.
+### 1-2. 데이터베이스(Realtime Database) 켜고 규칙 넣기
+1. 왼쪽 메뉴 **데이터베이스 및 스토리지 → Realtime Database → 데이터베이스 만들기** (잠금 모드로 시작).
+2. 위쪽 **규칙** 탭 → 내용을 전부 지우고 `database.rules.json` 내용을 붙여 넣기 → **게시**.
+
+> Firestore를 쓰고 싶으면 `firebase-config.js`에 `window.STUDY_BACKEND = "firestore";`를 넣고, Firestore 규칙 칸에 `firestore.rules`를 붙여 넣으세요.
 
 ### 1-3. 웹 앱 등록하고 설정값 복사
 1. 프로젝트 개요 옆 ⚙️ → **프로젝트 설정** → 아래 **내 앱**에서 웹 아이콘 `</>` 클릭.

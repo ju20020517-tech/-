@@ -6,6 +6,7 @@
 <title>스터디 데이터 백업</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="shared-db.js"></script>
 <style>
@@ -72,11 +73,7 @@ a{color:var(--accent)}
     let n = 0;
     for (const c of COLS) {
       const docs = Object.entries(cols[c] || {});
-      for (let i = 0; i < docs.length; i += 400) {
-        const b = firebase.firestore().batch();
-        docs.slice(i, i + 400).forEach(([id, v]) => { b.set(db.collection(c).doc(id), v); n++; });
-        await b.commit();
-      }
+      for (const [id, v] of docs) { await db.collection(c).doc(id).set(v); n++; }
     }
     return n;
   }
