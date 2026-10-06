@@ -1,12 +1,12 @@
 // ① Firebase 콘솔 → 프로젝트 설정 → 내 앱(웹 </>) 에서 보이는 firebaseConfig 값을 아래에 붙여 넣으세요.
 //    (README.md 의 "2. Firebase 만들기" 참고)
 window.STUDY_FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyD2W9dCQnJSocZtObzm_PE1kyjDLV2yCfE",
+  authDomain: "study-eda27.firebaseapp.com",
+  projectId: "study-eda27",
+  storageBucket: "study-eda27.firebasestorage.app",
+  messagingSenderId: "82694296889",
+  appId: "1:82694296889:web:2213d0e753326154c004e8"
 };
 
 // ② 스터디방 이름. 조원 모두 같은 주소로 들어오면 같은 방을 써요.
