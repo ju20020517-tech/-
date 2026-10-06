@@ -1112,6 +1112,13 @@ ${auto ? `${S}window.addEventListener('load',()=>setTimeout(()=>print(),400));${
     const o = { kinds: ['q', 'r', 'w'].filter(k => $('#pk-' + k).checked), grade: '', an: true, color: $('#p-color').checked, fq: $('#p-fq').checked };
     if (!o.kinds.length) { $('#pnote').textContent = '인쇄할 부분을 하나 이상 골라 주세요.'; return; }
     if (!window.claude) {           // 내려받은 HTML 파일: 바로 인쇄 창
+      // 휴대폰은 숨은 프레임 대신 화면 전체를 인쇄해 버려서, 인쇄용 화면을 새 탭으로 열어 인쇄해요
+      const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (mobile) {
+        const w = window.open('', '_blank');
+        if (w) { w.document.open(); w.document.write(printDoc(o, true)); w.document.close(); $('#printSheet').hidden = true; return; }
+        $('#pnote').textContent = '새 탭을 열지 못했어요. 브라우저의 팝업 차단을 풀고 다시 눌러 주세요.'; return;
+      }
       const f = document.createElement('iframe');
       f.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
       f.srcdoc = printDoc(o, false); document.body.append(f);
