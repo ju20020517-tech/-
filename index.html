@@ -951,13 +951,13 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
       return `<section class="grp"><h2><span class="no">${String(gi + 1).padStart(2, '0')}</span>${name}<small>${list.length}개</small></h2>${qs}</section>`;
     }).filter(Boolean).join('');
     const S = '<' + 'script>', SE = '<' + '/script>';
-    return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(nameOf(state.member))} 면접 답변 노트</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+    return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="${auto ? 'width=820' : 'width=device-width,initial-scale=1'}"><title>${esc(nameOf(state.member))} 면접 답변 노트</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap" media="print" onload="this.media='all'">
 <style>
 @page{size:A4;margin:15mm 15mm 16mm}
 @page{@bottom-center{content:counter(page) " / " counter(pages);font:8pt "IBM Plex Sans KR",sans-serif;color:#9A8A93}}
 *{box-sizing:border-box}
-html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{margin:0;font-family:"IBM Plex Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#231A20;font-size:9.8pt;line-height:1.7;background:#fff;word-break:keep-all;overflow-wrap:anywhere}
 .page{max-width:180mm;margin:0 auto}
 .cover{display:flex;justify-content:space-between;align-items:flex-end;gap:8mm;padding-bottom:4mm;border-bottom:.6mm solid #231A20;margin-bottom:2mm}
@@ -1011,7 +1011,7 @@ ${auto ? `<div class="hint">인쇄 창에서 'PDF로 저장'을 고르면 PDF �
 <div class="m">${dds.length ? `<div>${dds.map(x => `<span class="dd">${esc(x.name)} <b>${x.label}</b></span>`).join('')}</div>` : ''}<div>${stamp} 인쇄</div></div></header>
 <p class="sum">${groups.map(([k, n]) => `${n} ${items(k).length}개`).join(' · ')}${o.fq ? ' · 조원 피드백 포함' : ''}</p>
 ${secs || '<p class="empty">인쇄할 질문이 없어요.</p>'}</div>
-${auto ? `${S}window.addEventListener('load',()=>setTimeout(()=>print(),400));${SE}` : ''}
+${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;setTimeout(function(){print()},300)}function ready(){(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(go)}document.readyState==='complete'?ready():window.addEventListener('load',ready);setTimeout(go,3000)})();${SE}` : ''}
 </body></html>`;
   }
   function openPrint() {
