@@ -419,6 +419,41 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
 .cb .tx.none{color:var(--faint);font-size:14px}
 .cm{display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:6px;font-size:12px;color:var(--soft);border-left:1px dashed var(--rule);text-align:right}
 .cm .go{font:inherit;font-size:12px;font-weight:600;border:0;background:none;color:var(--accent);cursor:pointer;padding:0}
+.cmpv{display:inline-flex;align-self:flex-start;width:max-content;background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:3px;margin:0 0 12px}
+.cmpv button{font:inherit;font-size:13px;font-weight:600;border:0;background:none;color:var(--soft);padding:6px 14px;border-radius:7px;cursor:pointer}
+.cmpv button[aria-pressed="true"]{background:var(--accent);color:var(--paper)}
+body.wide .wrap{max-width:1280px}
+.cmpA{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(210px,1fr);gap:12px;overflow-x:auto;padding:2px 2px 10px;scroll-snap-type:x proximity}
+.cmpA.hide-empty .ccol.noans{display:none}
+.ccol{background:var(--paper);border:1.5px solid var(--rule);border-radius:14px;display:flex;flex-direction:column;min-width:0;min-height:240px;box-shadow:var(--shadow);scroll-snap-align:start}
+.ccol.me{border-color:var(--accent)}
+.cch{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--rule)}
+.cch .av,.cmpB thead .av{width:30px;height:30px;flex:none;border-radius:50%;background:var(--accent-tint);color:var(--accent);display:inline-grid;place-items:center;font-family:var(--serif);font-weight:700;font-size:14px}
+.ccol.me .cch .av,.cmpB thead th.me .av{background:var(--accent);color:var(--paper)}
+.cch b{font-family:var(--serif);font-size:15px}
+.ccol .lk{padding:8px 12px 0}
+.ccb{padding:12px;font-size:14px;line-height:1.75;flex:1;white-space:pre-wrap;overflow-wrap:anywhere}
+.ccb.none{color:var(--faint);font-size:13px}
+.ccf{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:8px 12px;border-top:1px dashed var(--rule);font-size:12px;color:var(--soft)}
+.ccf .nfb{color:var(--accent);font-weight:600}
+.ccf .go{margin-left:auto;font:inherit;font-size:12px;font-weight:600;border:0;background:none;color:var(--accent);cursor:pointer;padding:0}
+.swipe{display:none}
+.cmpsum2{font-size:13px;color:var(--soft);margin:0 0 10px}
+.cmpBw{overflow-x:auto;background:var(--paper);border:1.5px solid var(--rule);border-radius:14px;box-shadow:var(--shadow)}
+.cmpB{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed}
+.cmpB th,.cmpB td{border-top:1px solid var(--rule);border-left:1px solid var(--rule);padding:10px 12px;vertical-align:top;text-align:left;font-size:13px;font-weight:400}
+.cmpB thead th{border-top:0;background:var(--sum);font-weight:600;white-space:nowrap}
+.cmpB thead th .av{width:24px;height:24px;font-size:12px;margin-right:6px;vertical-align:middle}
+.cmpB thead th .who{margin-left:4px}
+.cmpB tr>*:first-child{border-left:0;position:sticky;left:0;z-index:1;background:var(--sum);width:190px}
+.cmpB td.me,.cmpB thead th.me{background:var(--accent-tint)}
+.qopen{font:inherit;font-family:var(--serif);font-weight:700;font-size:14px;line-height:1.5;text-align:left;color:var(--ink);background:none;border:0;padding:0;cursor:pointer}
+.qopen:hover{color:var(--accent)}
+.cmpB .cnt{display:block;font-size:11px;color:var(--faint);margin-top:3px}
+.cbtn{font:inherit;color:inherit;text-align:left;background:none;border:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%}
+.cbtn .tx{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;line-height:1.6;white-space:normal;overflow-wrap:anywhere}
+.cmpB td.open .cbtn .tx{display:block;-webkit-line-clamp:unset}
+.cmpB .none{color:var(--faint)}
 .cmpsum{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px;font-size:13px;color:var(--soft)}
 .cmpsum b{color:var(--accent);font-size:16px}
 .cmpopt{display:flex;align-items:center;gap:6px;cursor:pointer}
@@ -523,6 +558,16 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   .mcard .dd{min-height:0}
   .mcard.addm{min-height:110px}
   .cmpq{font-size:18px}
+  .qpick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 0 10px}
+  .qpick::-webkit-scrollbar{display:none}
+  .qpick button{flex:none;max-width:72vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cmphead{margin-bottom:6px}
+  .cmpA{grid-auto-columns:84%;scroll-snap-type:x mandatory;gap:10px}
+  .ccol{min-height:220px}
+  .swipe{display:inline}
+  .cmpB tr>*:first-child{width:118px}
+  .cmpB th,.cmpB td{padding:8px 10px}
+  .qopen{font-size:13px}
   .tadd input{min-width:0}
   .sbbox{padding:12px}
   .sbl li{padding:8px}
@@ -673,7 +718,8 @@ body.home-view .bar,body.home-view .stats,body.home-view .help{display:none!impo
   const josa = (w, a, b) => { const ch = String(w).charCodeAt(String(w).length - 1); return w + (ch >= 0xAC00 && ch <= 0xD7A3 && (ch - 0xAC00) % 28 ? a : b); };
   const isMine = c => !c.owner || c.owner === state.member;
   const nameOf = id => !id ? '' : (members.get(id)?.name || names.get(id) || '조원');
-  const state = { kind: 'q', grade: '', q: '', view: 'home', home: 'members', cmpT: '', who: 'me', member: self || 'm-juyeon' };
+  let cmpView0 = 'table'; try { cmpView0 = localStorage.getItem('study-cmpview') || 'table'; } catch {}
+  const state = { cmpView: cmpView0, kind: 'q', grade: '', q: '', view: 'home', home: 'members', cmpT: '', who: 'me', member: self || 'm-juyeon' };
   let db = null, col = null, local = false;
   const $ = s => document.querySelector(s);
   const listEl = $('#list'), saveEl = $('#save');
@@ -1389,6 +1435,7 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     $('#people').innerHTML = state.view === 'home' ? '' : `<div class="nhead"><button class="btn" type="button" data-home="1">← 조원 목록</button><h2 class="nt">${esc(nameOf(state.member))}의 면접 노트</h2></div>
       <div class="nsw" role="tablist" aria-label="다른 조원 노트">${ml.map(m => `<button type="button" role="tab" data-who="${esc(m.id)}" aria-pressed="${state.member === m.id}" aria-selected="${state.member === m.id}">${esc(m.name)}</button>`).join('')}</div>`;
     document.body.classList.toggle('home-view', state.view === 'home');
+    document.body.classList.toggle('wide', state.view === 'home' && state.home === 'compare');
     const sel = $('#selfSel'), opts = `<option value="">이름 고르기</option>` + ml.map(m => `<option value="${esc(m.id)}"${m.id === self ? ' selected' : ''}>${esc(m.name)}</option>`).join('');
     if (sel.innerHTML !== opts && document.activeElement !== sel) sel.innerHTML = opts;
     sel.closest('.self').classList.toggle('need', !members.has(self));
@@ -1451,29 +1498,42 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
     const pick = tl.map(x => `<button type="button" data-ct="${esc(x.id)}" aria-pressed="${x.id === state.cmpT}">${esc(x.text)}</button>`).join('');
     const addForm = members.has(self) ? `<form class="tadd" id="tadd"><input id="tnew" maxlength="120" placeholder="모아 볼 질문을 적어요 (예: 가장 기억에 남는 탐구는?)" aria-label="새 질문"><button type="submit">질문 추가</button></form>` : '';
     if (!t) return `<p class="cmpintro">같은 질문에 조원들이 어떻게 답했는지 나란히 봐요.</p>${addForm}<p class="empty">아직 질문이 없어요. 위에서 질문을 추가해 주세요.</p>`;
-    const answeredN = memberList().filter(m => { const c = answerFor(t, m.id).card; return c && toText(c.content).trim(); }).length;
-    const blocks = memberList().map(m => {
-      const a = answerFor(t, m.id), c = a.card, txt = c ? toText(c.content).trim() : '';
-      const sp = c ? speak(c) : null;
-      const nfb = c ? memberList().filter(o => o.id !== m.id && fbHas(fbs.get(c.id + '__' + o.id) || {})).length : 0;
-      const isMe = m.id === self;
+    const ml = memberList();
+    const fit = sp => sp.html.match(/pill (\w*)/)?.[1] || '';
+    const ansOf = (tp, m) => { const a = answerFor(tp, m.id), c = a.card, txt = c ? toText(c.content).trim() : ''; return { a, c, txt, sp: c ? speak(c) : null }; };
+    const nfbOf = (c, m) => c ? ml.filter(o => o.id !== m.id && fbHas(fbs.get(c.id + '__' + o.id) || {})).length : 0;
+    const view = `<div class="cmpv" role="tablist" aria-label="모아 보기 방식"><button type="button" role="tab" data-cv="row" aria-pressed="${state.cmpView === 'row'}">가로 일렬</button><button type="button" role="tab" data-cv="table" aria-pressed="${state.cmpView !== 'row'}">한 장 표</button></div>`;
+    const intro = '<p class="cmpintro">같은 질문에 조원들이 어떻게 답했는지 모아 봐요. 질문을 추가하면 조원마다 자기 노트에서 맞는 답변을 골라 연결해요.</p>';
+    // B안: 모든 질문 × 모든 조원 한 장 표
+    if (state.cmpView !== 'row') {
+      const head = `<tr><th scope="col">질문</th>${ml.map(m => `<th scope="col" class="${m.id === self ? 'me' : ''}"><span class="av">${avHTML(m)}</span>${esc(m.name)}${m.id === self ? '<span class="who">나</span>' : ''}</th>`).join('')}</tr>`;
+      const rows = tl.map(tp => {
+        const cells = ml.map(m => { const { c, txt, sp } = ansOf(tp, m);
+          return `<td class="${m.id === self ? 'me' : ''}">${txt ? `<button class="cbtn" type="button" aria-label="${esc(m.name)} 답변 전체 보기"><span class="tx">${clean(c.content)}</span><span class="pill ${fit(sp)}">약 ${sp.t}</span></button>` : '<span class="none">–</span>'}</td>`; }).join('');
+        const n = ml.filter(m => ansOf(tp, m).txt).length;
+        return `<tr><th scope="row"><button class="qopen" type="button" data-ctopen="${esc(tp.id)}">Q. ${esc(tp.text)}</button><span class="cnt">${n} / ${ml.length}명 답변</span></th>${cells}</tr>`;
+      }).join('');
+      return `${intro}${addForm}${view}<p class="cmpsum2">칸을 누르면 답변이 다 펼쳐지고, 질문을 누르면 가로 일렬로 크게 봐요.</p>
+        <div class="cmpBw"><table class="cmpB" style="min-width:${190 + ml.length * 180}px"><thead>${head}</thead><tbody>${rows}</tbody></table></div>`;
+    }
+    // A안: 한 질문, 조원 답변을 가로 일렬로
+    const answeredN = ml.filter(m => ansOf(t, m).txt).length;
+    const cols = ml.map(m => {
+      const { a, c, txt, sp } = ansOf(t, m), nfb = nfbOf(c, m), isMe = m.id === self;
       const opts = isMe ? `<label class="lk"><span>내 답변 고르기</span> <select id="lk-${esc(t.id)}" data-topic="${esc(t.id)}">
           <option value="">${a.auto ? '자동 연결 (같은 질문)' : '고르지 않음'}</option>
           ${myAnswerCards(m.id).map(x => `<option value="${esc(x.id)}"${a.linked && a.card.id === x.id ? ' selected' : ''}>${x.kind === 'w' ? '[약점] ' : x.kind === 'r' ? '[생기부] ' : ''}${esc(x.question.trim().slice(0, 40))}${toText(x.content).trim() ? '' : ' (답변 없음)'}</option>`).join('')}
         </select></label>` : '';
-      const src = '';
-      return `<div class="crow${isMe ? ' me' : ''}${txt ? '' : ' noans'}" role="row">
-        <div class="cn" role="rowheader"><span class="av">${avHTML(m)}</span><b>${esc(m.name)}</b>${isMe ? '<span class="who">나</span>' : ''}</div>
-        <div class="cb" role="cell">${opts}${src}
-          ${txt ? `<div class="tx">${clean(c.content)}</div>` : `<div class="tx none">${c ? '고른 질문에 아직 답변이 없어요.' : isMe ? '오른쪽 위 목록에서 내 노트의 답변을 골라 주세요.' : '아직 답변을 고르지 않았어요.'}</div>`}</div>
-        <div class="cm" role="cell">${txt ? `<span class="pill ${sp.html.match(/pill (\w*)/)?.[1] || ''}">약 ${sp.t}</span><span>${sp.n}자</span>` : ''}${nfb ? `<span>피드백 ${nfb}</span>` : ''}${c ? `<button class="go" type="button" data-open="${esc(m.id)}" data-gocard="${esc(c.id)}">노트 →</button>` : ''}</div></div>`;
+      return `<div class="ccol${isMe ? ' me' : ''}${txt ? '' : ' noans'}">
+        <div class="cch"><span class="av">${avHTML(m)}</span><b>${esc(m.name)}</b>${isMe ? '<span class="who">나</span>' : ''}</div>${opts}
+        ${txt ? `<div class="ccb">${clean(c.content)}</div>` : `<div class="ccb none">${c ? '고른 질문에 아직 답변이 없어요.' : isMe ? '위 목록에서 내 노트의 답변을 골라 주세요.' : '아직 답변을 고르지 않았어요.'}</div>`}
+        ${txt || c ? `<div class="ccf">${txt ? `<span class="pill ${fit(sp)}">약 ${sp.t}</span><span>${sp.n}자</span>` : ''}${nfb ? `<span class="nfb">피드백 ${nfb}</span>` : ''}${c ? `<button class="go" type="button" data-open="${esc(m.id)}" data-gocard="${esc(c.id)}">노트 →</button>` : ''}</div>` : ''}</div>`;
     }).join('');
     const canDel = members.has(self), armed = tArm && tArm.id === t.id && Date.now() < tArm.until;
-    return `<p class="cmpintro">같은 질문에 조원들이 어떻게 답했는지 나란히 봐요. 질문을 추가하면 조원마다 자기 노트에서 맞는 답변을 골라 연결해요.</p>
-      ${addForm}<div class="qpick">${pick}</div>
+    return `${intro}${addForm}${view}<div class="qpick">${pick}</div>
       <div class="cmphead"><h2 class="cmpq">Q. ${esc(t.text)}</h2>${t.createdBy ? `<span class="by">${esc(josa(nameOf(t.createdBy), '이', '가'))} 추가한 질문</span>` : ''}${canDel ? `<button class="btn danger${armed ? ' arm' : ''}" type="button" id="tdel">${armed ? '한 번 더 누르면 삭제' : '질문 삭제'}</button>` : ''}</div>
-      <div class="cmpsum"><span><b>${answeredN}</b> / ${memberList().length}명 답변</span><label class="cmpopt"><input type="checkbox" id="cmpHide"${state.cmpHide ? ' checked' : ''}> 답변 없는 조원 숨기기</label></div>
-      <div class="cmp${state.cmpHide ? ' hide-empty' : ''}" role="table" aria-label="조원 답변 모아 보기">${blocks}</div>`;
+      <div class="cmpsum"><span><b>${answeredN}</b> / ${ml.length}명 답변<span class="swipe"> · 옆으로 밀어서 넘기기 →</span></span><label class="cmpopt"><input type="checkbox" id="cmpHide"${state.cmpHide ? ' checked' : ''}> 답변 없는 조원 숨기기</label></div>
+      <div class="cmpA${state.cmpHide ? ' hide-empty' : ''}" aria-label="조원 답변 가로 일렬">${cols}</div>`;
   }
   function saveTopic(t) { topics.set(t.id, t); if (local) { lsTL(); return Promise.resolve(); } const { id, ...r } = t; return tcol.doc(id).set(r); }
   function saveLink(l) { links.set(l.id, l); if (local) { lsTL(); return Promise.resolve(); } const { id, ...r } = l; return lcol.doc(id).set(r); }
@@ -1495,7 +1555,10 @@ ${auto ? `${S}(function(){var done=false;function go(){if(done)return;done=true;
   listEl.addEventListener('click', e => {
     const t = e.target.closest('[data-home-tab]'); if (t) { state.home = t.dataset.homeTab; render(); return; }
     const ct = e.target.closest('[data-ct]'); if (ct) { state.cmpT = ct.dataset.ct; render(); return; }
-    if (e.target.id === 'cmpHide') { state.cmpHide = e.target.checked; listEl.querySelector('.cmp')?.classList.toggle('hide-empty', state.cmpHide); return; }
+    const cv = e.target.closest('[data-cv]'); if (cv) { state.cmpView = cv.dataset.cv; try { localStorage.setItem('study-cmpview', state.cmpView); } catch {} render(); return; }
+    const qo = e.target.closest('[data-ctopen]'); if (qo) { state.cmpT = qo.dataset.ctopen; state.cmpView = 'row'; try { localStorage.setItem('study-cmpview', 'row'); } catch {} render(); window.scrollTo(0, 0); return; }
+    const cb = e.target.closest('.cbtn'); if (cb) { cb.closest('td').classList.toggle('open'); return; }
+    if (e.target.id === 'cmpHide') { state.cmpHide = e.target.checked; listEl.querySelector('.cmpA')?.classList.toggle('hide-empty', state.cmpHide); return; }
     const del = e.target.closest('#tdel');
     if (del) {
       const id = state.cmpT;
